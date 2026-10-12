@@ -34,12 +34,7 @@ export default function ConfirmDialog({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onCancel}
-      ariaLabelledBy={titleId}
-      ariaDescribedBy={messageId}
-    >
+    <Modal isOpen={isOpen} onClose={onCancel} ariaDescribedBy={messageId}>
       <div className="space-y-4">
         <h2
           id={titleId}

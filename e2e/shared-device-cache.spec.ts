@@ -18,25 +18,13 @@ import { mockSorobanRpc } from './fixtures/mock-contract';
 
 const WALLET_A_SECRET =
   'SACAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAINUQ';
-const WALLET_A_ADDRESS = Keypair.fromSecret(WALLET_A_SECRET).publicKey();
+const WALLET_A_KEYPAIR = Keypair.fromSecret(WALLET_A_SECRET);
+const WALLET_A_ADDRESS = WALLET_A_KEYPAIR.publicKey();
+
 const WALLET_B_SECRET =
   'SACQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQLCMS';
-
-function truncated(address: string) {
-  return `${address.slice(0, 4)}…${address.slice(-4)}`;
-}
-
-/** Cache names and the URLs stored in each. */
-function cacheContents(page: import('@playwright/test').Page) {
-  return page.evaluate(async () => {
-    const out: Record<string, string[]> = {};
-    for (const name of await caches.keys()) {
-      const keys = await (await caches.open(name)).keys();
-      out[name] = keys.map((r) => new URL(r.url).pathname);
-    }
-    return out;
-  });
-}
+const WALLET_B_KEYPAIR = Keypair.fromSecret(WALLET_B_SECRET);
+const WALLET_B_ADDRESS = WALLET_B_KEYPAIR.publicKey();
 
 test.describe('Shared Device Cache Leak Prevention', () => {
   test("disconnecting purges the previous user's cached API data", async ({
