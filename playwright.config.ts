@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
-import { Keypair } from '@stellar/stellar-sdk';
+import { Keypair, StrKey } from '@stellar/stellar-sdk';
 import * as os from 'os';
 import * as path from 'path';
+import { E2E_ADMIN_ADDRESS } from './e2e/fixtures/admin';
 
 const PORT = process.env.E2E_PORT ?? '3100';
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -45,6 +46,15 @@ const SEP10_HOME_DOMAIN = envOr(
   process.env.SEP10_HOME_DOMAIN,
   `127.0.0.1:${PORT}`,
 );
+
+// Contract reads are answered by e2e/fixtures/mock-contract.ts, but the SDK
+// still needs a syntactically valid contract address to build the call —
+// CI's workflow-level env sets the placeholder `ci-placeholder`, which isn't.
+const E2E_CONTRACT_ID = StrKey.isValidContract(
+  process.env.NEXT_PUBLIC_CONTRACT_ID ?? '',
+)
+  ? process.env.NEXT_PUBLIC_CONTRACT_ID!
+  : StrKey.encodeContract(Buffer.alloc(32, 7));
 
 // A dedicated port + explicit NEXT_PUBLIC_BASE_URL/NEXT_PUBLIC_DOMAIN keep the
 // dev server's SEP-10 origin check (app/api/auth/sep10/route.ts) happy —
@@ -106,6 +116,11 @@ export default defineConfig({
         'e2e-session-secret-do-not-use-in-production',
       ),
       SESSIONS_DB_PATH,
+      // The admin specs sign in as e2e/fixtures/admin.ts's wallet; the /admin
+      // guard and admin API routes compare against this. CI's workflow-level
+      // env declares it empty, so a plain spread would leave nobody admin.
+      NEXT_PUBLIC_ADMIN_ADDRESS: E2E_ADMIN_ADDRESS,
+      NEXT_PUBLIC_CONTRACT_ID: E2E_CONTRACT_ID,
       // Passed through only when the runner asks for it. Unset means the real
       // 20-minute access-token TTL, so the rest of the suite exercises
       // production-like lifetimes; e2e/session-lifecycle.spec.ts needs a short

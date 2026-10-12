@@ -1,6 +1,7 @@
-import type { Page, Route } from '@playwright/test';
+import { xdr } from '@stellar/stellar-sdk';
 import { test, expect } from './fixtures';
 import { mockSorobanRpc } from './fixtures/mock-contract';
+import { mockChunkedUploadApi } from './fixtures/mock-upload';
 
 /**
  * Resumable highlight-reel upload across a page reload (#1360, #664, #1003).
@@ -15,7 +16,6 @@ import { mockSorobanRpc } from './fixtures/mock-contract';
 const CHUNK_SIZE = 1024 * 1024; // lib/ipfs.ts CHUNK_SIZE_BYTES
 const TOTAL_CHUNKS = 5;
 const RESUME_KEY = 'scout-off:upload-resume';
-const MOCK_CID = 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi';
 
 /** A 5 MB file whose leading bytes are a valid MP4 `ftyp` box. */
 function makeMp4(): Buffer {
@@ -53,52 +53,6 @@ function makeMp4(): Buffer {
   return buf;
 }
 
-/** Stateful stand-in for the chunked-upload API routes. */
-function mockChunkedUploadApi(page: Page) {
-  const state = {
-    received: new Set<number>(),
-    chunkRequests: [] as number[],
-    failFromChunk: 2 as number | null, // abort chunk 3 (index 2) onward
-  };
-
-  const json = (route: Route, body: unknown) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(body),
-    });
-
-  page.route('**/api/ipfs/upload/init', (route) =>
-    json(route, { sessionId: 'e2e-session' }),
-  );
-  page.route('**/api/ipfs/upload/chunk', (route) => {
-    const body = route.request().postDataBuffer()?.toString('latin1') ?? '';
-    const index = Number(/name="chunkIndex"\r\n\r\n(\d+)/.exec(body)?.[1]);
-    state.chunkRequests.push(index);
-    if (state.failFromChunk !== null && index >= state.failFromChunk) {
-      return route.abort('failed');
-    }
-    state.received.add(index);
-    return json(route, {
-      receivedChunks: state.received.size,
-      totalChunks: TOTAL_CHUNKS,
-    });
-  });
-  page.route('**/api/ipfs/upload/status**', (route) =>
-    json(route, {
-      receivedChunks: [...state.received].sort((a, b) => a - b),
-      totalChunks: TOTAL_CHUNKS,
-    }),
-  );
-  page.route('**/api/ipfs/upload/complete', (route) =>
-    state.received.size === TOTAL_CHUNKS
-      ? json(route, { cid: MOCK_CID })
-      : route.fulfill({ status: 400, body: '{"error":"Incomplete upload"}' }),
-  );
-
-  return state;
-}
-
 test.describe('chunked highlight-reel upload', () => {
   // The interrupted chunk is retried with backoff (~7.5 s) before giving up.
   test.setTimeout(120_000);
@@ -107,8 +61,13 @@ test.describe('chunked highlight-reel upload', () => {
     page,
     wallet,
   }) => {
-    mockSorobanRpc(page);
-    const api = mockChunkedUploadApi(page);
+    // An unregistered wallet, so /player opens the registration wizard.
+    mockSorobanRpc(page, { returns: { get_player: xdr.ScVal.scvVoid() } });
+    // Chunk 3 (index 2) onward fails until the reload below.
+    const api = mockChunkedUploadApi(page, {
+      totalChunks: TOTAL_CHUNKS,
+      failFromChunk: 2,
+    });
     const video = {
       name: 'highlight.mp4',
       mimeType: 'video/mp4',

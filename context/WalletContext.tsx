@@ -354,15 +354,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setIsLoadingBalance(true);
     setBalanceError(null);
     try {
-      const { rpc } = await import('@/lib/stellar');
-      const account = await rpc.getAccount(address);
-      const native = (
-        (account as any).balances as Array<{
-          asset_type: string;
-          balance: string;
-        }>
-      ).find((b) => b.asset_type === 'native');
-      setXlmBalance(native ? native.balance : '0.0000000');
+      // Horizon, not Soroban RPC: rpc.getAccount() returns only the
+      // account id and sequence number, never balances.
+      const { getXLMBalance } = await import('@/lib/stellar');
+      setXlmBalance((await getXLMBalance(address)).toFixed(7));
     } catch (err: unknown) {
       setXlmBalance(null);
       setBalanceError(

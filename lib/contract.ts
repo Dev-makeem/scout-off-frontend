@@ -318,12 +318,18 @@ async function buildTx(
 }
 
 // ── Read-only helper (uses a dummy account — no ledger lookup needed) ─────────
+
+/**
+ * Source account for read-only simulations. It never signs or pays, but the
+ * SDK still validates it, so it must be a well-formed address (the all-zero
+ * key) — __tests__/lib/contract.test.ts guards that.
+ */
+export const SIMULATION_SOURCE_ACCOUNT =
+  'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF';
+
 async function simulateTx(method: string, args: xdr.ScVal[]) {
   const contract = getContract();
-  const dummyAccount = new Account(
-    'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN',
-    '0',
-  );
+  const dummyAccount = new Account(SIMULATION_SOURCE_ACCOUNT, '0');
   const tx = new TB(dummyAccount, { fee: BASE_FEE, networkPassphrase: NETWORK })
     .addOperation(contract.call(method, ...args))
     .setTimeout(30)

@@ -54,6 +54,25 @@ describe('useOnboardingTour', () => {
     expect(result.current.isVisible).toBe(false);
   });
 
+  it('hides the tour once a restored wallet turns out to have dismissed it', () => {
+    // First render runs before the session restores (anon key, no state →
+    // tour shown); the wallet's own key then says it was dismissed.
+    localStorage.setItem(
+      storageKey(WALLET),
+      JSON.stringify({ isDismissed: true, isCompleted: false }),
+    );
+    const { result, rerender } = renderHook(
+      ({ wallet }: { wallet?: string }) =>
+        useOnboardingTour(TOUR_ID, STEPS, wallet),
+      { initialProps: {} as { wallet?: string } },
+    );
+    expect(result.current.isVisible).toBe(true);
+
+    rerender({ wallet: WALLET });
+    expect(result.current.isVisible).toBe(false);
+    expect(result.current.isDismissed).toBe(true);
+  });
+
   it('restores isDismissed from localStorage and keeps the tour hidden', () => {
     localStorage.setItem(
       storageKey(WALLET),

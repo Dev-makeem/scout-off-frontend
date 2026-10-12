@@ -34,7 +34,8 @@ jest.mock('@/lib/walletAdapters', () => ({
 }));
 
 jest.mock('@/lib/stellar', () => ({
-  rpc: { sendTransaction: jest.fn(), getAccount: jest.fn() },
+  rpc: { sendTransaction: jest.fn() },
+  getXLMBalance: jest.fn(),
   NETWORK: 'Test SDF Network ; September 2015',
   // Mirrors lib/stellar.ts's real `export { ..., TransactionBuilder }` —
   // WalletContext now reads TransactionBuilder off this dynamically
@@ -110,10 +111,8 @@ describe('WalletContext', () => {
     ledger.getPublicKey.mockResolvedValue(PUBLIC_KEY);
     ledger.signTransaction.mockResolvedValue(SIGNED_XDR);
 
-    const { rpc } = jest.requireMock('@/lib/stellar');
-    rpc.getAccount.mockResolvedValue({
-      balances: [{ asset_type: 'native', balance: '100.0000000' }],
-    });
+    const { getXLMBalance } = jest.requireMock('@/lib/stellar');
+    getXLMBalance.mockResolvedValue(100);
   });
 
   describe('connectWithProvider', () => {
@@ -209,12 +208,12 @@ describe('WalletContext', () => {
 
     it('calls loadBalance after successful connect', async () => {
       setupSep10();
-      const { rpc } = jest.requireMock('@/lib/stellar');
+      const { getXLMBalance } = jest.requireMock('@/lib/stellar');
       const { result } = renderHook(() => useWalletContext(), { wrapper });
       await act(async () => {
         await result.current.connectWithProvider('freighter');
       });
-      expect(rpc.getAccount).toHaveBeenCalledWith(PUBLIC_KEY);
+      expect(getXLMBalance).toHaveBeenCalledWith(PUBLIC_KEY);
       await waitFor(() =>
         expect(result.current.xlmBalance).toBe('100.0000000'),
       );
@@ -852,10 +851,8 @@ describe('connectWithProvider — account-switch mismatch verification', () => {
     localStorage.clear();
     freighter.signTransaction.mockResolvedValue(SIGNED_XDR);
 
-    const { rpc } = jest.requireMock('@/lib/stellar');
-    rpc.getAccount.mockResolvedValue({
-      balances: [{ asset_type: 'native', balance: '100.0000000' }],
-    });
+    const { getXLMBalance } = jest.requireMock('@/lib/stellar');
+    getXLMBalance.mockResolvedValue(100);
   });
 
   // ── AC2: matching key ──────────────────────────────────────────────────────

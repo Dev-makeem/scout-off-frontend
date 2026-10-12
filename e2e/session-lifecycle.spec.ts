@@ -277,6 +277,8 @@ test.describe.serial('SEP-10 session lifecycle', () => {
     browser,
     page,
   }) => {
+    // Two full SEP-10 logins plus a first visit to /settings.
+    test.setTimeout(120_000);
     // A wallet of its own: SessionStore.revokeAllForWallet is wallet-scoped,
     // so this spec must never touch the account the rest of the suite shares.
     const wallet = await installMockFreighter(page, {

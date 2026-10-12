@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { mockSorobanRpc } from './fixtures/mock-contract';
+import { DEFAULT_PLAYER, mockSorobanRpc, scv } from './fixtures/mock-contract';
 
 const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
@@ -57,20 +57,27 @@ test.describe('keyboard accessibility for critical flows', () => {
     page,
     wallet,
   }) => {
-    mockSorobanRpc(page, { isValidator: false });
+    test.setTimeout(90_000);
+    mockSorobanRpc(page, {
+      isValidator: false,
+      returns: { get_contact_fee: scv(1) },
+    });
     await connectWallet(page);
-    await page.goto('/en/scout');
-    await page.getByLabel(/region/i).selectOption({ label: 'Nigeria' });
-    await page.getByLabel(/position/i).selectOption({ label: 'Striker' });
-    await page.getByLabel(/level/i).selectOption({ label: 'Semi-Pro' });
+    await expect(
+      page.getByText(
+        wallet.publicKey.slice(0, 4) + '…' + wallet.publicKey.slice(-4),
+      ),
+    ).toBeVisible();
+    // Pay-to-contact lives on the player profile.
+    await page.goto(`/en/player/${DEFAULT_PLAYER.id}`);
 
-    const payButton = page
-      .getByRole('button', { name: /pay to contact/i })
-      .first();
+    const payButton = page.getByRole('button', { name: /^pay to contact/i });
+    await expect(payButton).toBeVisible({ timeout: 60_000 });
     await payButton.focus();
     await page.keyboard.press('Enter');
 
-    const dialog = page.getByRole('dialog');
+    // The cookie-consent banner is also a dialog; scope to the modal one.
+    const dialog = page.getByRole('dialog', { name: 'Contact Player' });
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveAttribute('aria-describedby', /.+/);
     await expect(

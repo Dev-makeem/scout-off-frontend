@@ -808,3 +808,17 @@ describe('buildTx short-circuits on known incompatibility', () => {
     expect(mockRpc.getAccount).toHaveBeenCalledWith(VALID_ADDRESS);
   });
 });
+
+describe('SIMULATION_SOURCE_ACCOUNT', () => {
+  it('is a well-formed Stellar address (the SDK rejects malformed ones)', () => {
+    const { SIMULATION_SOURCE_ACCOUNT } = jest.requireActual(
+      '../../lib/contract',
+    ) as typeof import('../../lib/contract');
+    const { StrKey } = jest.requireActual(
+      '@stellar/stellar-sdk',
+    ) as typeof import('@stellar/stellar-sdk');
+    expect(StrKey.isValidEd25519PublicKey(SIMULATION_SOURCE_ACCOUNT)).toBe(
+      true,
+    );
+  });
+});

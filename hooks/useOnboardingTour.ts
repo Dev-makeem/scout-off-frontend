@@ -47,8 +47,11 @@ export function useOnboardingTour(
           ? Math.min(Math.max(parsed.currentStep, 0), steps.length - 1)
           : 0;
       if (parsed.isDismissed || parsed.isCompleted) {
+        // Hide explicitly: the key changes from `_anon` to the wallet once
+        // the session restores, and the anon pass has already shown the tour.
         setState((prev) => ({
           ...prev,
+          isVisible: false,
           isDismissed: parsed.isDismissed,
           isCompleted: parsed.isCompleted,
         }));

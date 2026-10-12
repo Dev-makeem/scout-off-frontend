@@ -33,7 +33,8 @@ jest.mock('@/lib/walletAdapters', () => ({
 }));
 
 jest.mock('@/lib/stellar', () => ({
-  rpc: { sendTransaction: jest.fn(), getAccount: jest.fn() },
+  rpc: { sendTransaction: jest.fn() },
+  getXLMBalance: jest.fn(),
   NETWORK: 'Test SDF Network ; September 2015',
   TransactionBuilder: { fromXDR: jest.fn(() => ({})) },
 }));
@@ -128,10 +129,8 @@ describe('SessionExpiryWarning', () => {
     localStorage.clear();
     freighter.getPublicKey.mockResolvedValue(PUBLIC_KEY);
     freighter.signTransaction.mockResolvedValue(SIGNED_XDR);
-    const { rpc } = jest.requireMock('@/lib/stellar');
-    rpc.getAccount.mockResolvedValue({
-      balances: [{ asset_type: 'native', balance: '100.0000000' }],
-    });
+    const { getXLMBalance } = jest.requireMock('@/lib/stellar');
+    getXLMBalance.mockResolvedValue(100);
   });
 
   afterEach(() => {

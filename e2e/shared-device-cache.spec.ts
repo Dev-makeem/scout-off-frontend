@@ -1,114 +1,103 @@
 /**
- * E2E test: Shared-device Service Worker cache isolation
+ * E2E test: shared-device cache isolation
  *
- * Verifies that personal/authenticated API responses (like /api/watchlist)
- * are never served from SW Cache Storage to a different user after wallet disconnect
- * or account switch when offline.
+ * In production the service worker could hold API responses in Cache
+ * Storage. Personal routes are NetworkOnly (lib/pwaCacheConfig.ts, unit
+ * tested in __tests__/lib/pwaCacheConfig.test.ts), and as a second line of
+ * defence WalletContext calls clearUserCaches() on disconnect and on
+ * connect. The e2e dev server runs with the service worker disabled
+ * (next.config.js), so this spec seeds Cache Storage the way a production
+ * worker would and checks that the app itself purges user A's entries
+ * before user B can read them.
  */
 
 import { test, expect } from '@playwright/test';
-import { installMockFreighter } from './fixtures/wallet-mock';
 import { Keypair } from '@stellar/stellar-sdk';
+import { installMockFreighter } from './fixtures/wallet-mock';
+import { mockSorobanRpc } from './fixtures/mock-contract';
 
 const WALLET_A_SECRET =
   'SACAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAINUQ';
-const WALLET_A_KEYPAIR = Keypair.fromSecret(WALLET_A_SECRET);
-const WALLET_A_ADDRESS = WALLET_A_KEYPAIR.publicKey();
-
+const WALLET_A_ADDRESS = Keypair.fromSecret(WALLET_A_SECRET).publicKey();
 const WALLET_B_SECRET =
   'SACQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQKBIFAUCQLCMS';
-const WALLET_B_KEYPAIR = Keypair.fromSecret(WALLET_B_SECRET);
-const WALLET_B_ADDRESS = WALLET_B_KEYPAIR.publicKey();
+
+function truncated(address: string) {
+  return `${address.slice(0, 4)}…${address.slice(-4)}`;
+}
+
+/** Cache names and the URLs stored in each. */
+function cacheContents(page: import('@playwright/test').Page) {
+  return page.evaluate(async () => {
+    const out: Record<string, string[]> = {};
+    for (const name of await caches.keys()) {
+      const keys = await (await caches.open(name)).keys();
+      out[name] = keys.map((r) => new URL(r.url).pathname);
+    }
+    return out;
+  });
+}
 
 test.describe('Shared Device Cache Leak Prevention', () => {
-  test('User B does not see User A cached watchlist data when network goes offline', async ({
+  test("disconnecting purges the previous user's cached API data", async ({
     page,
-    context,
   }) => {
-    // 1. Install mock wallet for User A
-    await installMockFreighter(page, { secret: WALLET_A_SECRET });
-
-    // Mock API routes for watchlist
-    await page.route('**/api/watchlist**', async (route) => {
-      const request = route.request();
-      if (request.headers()['x-wallet-address'] === WALLET_B_ADDRESS) {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ items: ['player-b-unique-id'] }),
-        });
-      } else {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ items: ['player-a-secret-data'] }),
-        });
-      }
+    const wallet = await installMockFreighter(page, {
+      secret: WALLET_A_SECRET,
     });
-
-    // Mock SEP-10 auth routes
-    await page.route('**/api/auth/sep10**', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ transaction: 'AAAA...', token: 'mock-jwt' }),
-      });
-    });
-
-    // Mock session routes
-    await page.route('**/api/auth/session**', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ authenticated: true }),
-      });
-    });
+    mockSorobanRpc(page);
 
     await page.goto('/en');
+    await page.getByRole('button', { name: 'Connect Wallet' }).click();
+    await page.getByRole('button', { name: /freighter/i }).click();
+    await expect(page.getByText(truncated(WALLET_A_ADDRESS))).toBeVisible();
 
-    // Fetch User A's watchlist request to simulate loading
-    const responseA = await page.evaluate(async () => {
-      const res = await fetch('/api/watchlist', {
-        headers: { 'x-wallet-address': 'WALLET_A' },
-      });
-      return res.json();
-    });
-    expect(responseA.items).toContain('player-a-secret-data');
-
-    // Disconnect / Clear User Caches
+    // What a production service worker could have stored for user A, next
+    // to a static-asset cache that must survive a sign-out.
     await page.evaluate(async () => {
-      if ('caches' in window) {
-        const names = await caches.keys();
-        await Promise.all(names.map((n) => caches.delete(n)));
-      }
+      const api = await caches.open('api-cache');
+      await api.put(
+        '/api/watchlist',
+        new Response(JSON.stringify({ items: ['player-a-secret-data'] })),
+      );
+      const statics = await caches.open('static-assets');
+      await statics.put('/icons/icon-192.png', new Response('png'));
+    });
+    expect(await cacheContents(page)).toMatchObject({
+      'api-cache': ['/api/watchlist'],
     });
 
-    // Go offline
-    await context.setOffline(true);
+    // User A signs out on the shared device.
+    await page
+      .getByRole('button', {
+        name: `Disconnect Wallet — ${truncated(WALLET_A_ADDRESS)}`,
+      })
+      .click();
+    await page
+      .getByRole('dialog', { name: 'Disconnect wallet?' })
+      .getByRole('button', { name: 'Disconnect', exact: true })
+      .click();
+    await expect(page.getByText(truncated(WALLET_A_ADDRESS))).toHaveCount(0);
 
-    // Switch to User B
-    await installMockFreighter(page, { secret: WALLET_B_SECRET });
+    await expect
+      .poll(() => cacheContents(page))
+      .toEqual({
+        'static-assets': ['/icons/icon-192.png'],
+      });
 
-    // Try fetching /api/watchlist offline as User B
-    const offlineFetch = page.evaluate(async () => {
-      try {
-        const res = await fetch('/api/watchlist', {
-          headers: { 'x-wallet-address': 'WALLET_B' },
-        });
-        const data = await res.json();
-        return { success: true, data };
-      } catch (err) {
-        return { success: false, error: (err as Error).message };
-      }
+    // User B signs in on the same browser and finds nothing of A's — even
+    // offline, where only Cache Storage could answer.
+    await wallet.switchAccount(WALLET_B_SECRET);
+    await page.getByRole('button', { name: 'Connect Wallet' }).click();
+    await page.getByRole('button', { name: /freighter/i }).click();
+    await expect(page.getByText(truncated(wallet.publicKey))).toBeVisible();
+
+    await page.context().setOffline(true);
+    const cached = await page.evaluate(async () => {
+      const hit = await caches.match('/api/watchlist');
+      return hit ? hit.text() : null;
     });
-
-    const result = await offlineFetch;
-
-    // Assert User A's data was NOT returned to User B from cache
-    if (result.success) {
-      expect(result.data.items).not.toContain('player-a-secret-data');
-    } else {
-      expect(result.success).toBe(false);
-    }
+    expect(cached).toBeNull();
+    await page.context().setOffline(false);
   });
 });

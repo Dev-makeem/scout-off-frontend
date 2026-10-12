@@ -16,6 +16,8 @@ export interface ModalProps {
   children: ReactNode;
   /** Optional title rendered at the top of the modal */
   title?: string;
+  /** Id of an element inside the modal that names it, when `title` isn't used. */
+  ariaLabelledBy?: string;
   /** Optional element ID containing the dialog description. */
   ariaDescribedBy?: string;
   /** Overrides the translated close-button label. */
@@ -50,6 +52,7 @@ export default function Modal({
   onClose,
   children,
   title,
+  ariaLabelledBy,
   ariaDescribedBy,
   closeLabel,
 }: ModalProps) {
@@ -161,7 +164,7 @@ export default function Modal({
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={title ? titleId : undefined}
+        aria-labelledby={title ? titleId : ariaLabelledBy}
         aria-describedby={ariaDescribedBy}
         // tabIndex="-1" lets the container receive programmatic focus when
         // no focusable children are present.

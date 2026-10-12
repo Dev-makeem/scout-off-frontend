@@ -15,7 +15,8 @@ jest.mock('@/lib/walletAdapters', () => ({
 }));
 
 jest.mock('@/lib/stellar', () => ({
-  rpc: { sendTransaction: jest.fn(), getAccount: jest.fn() },
+  rpc: { sendTransaction: jest.fn() },
+  getXLMBalance: jest.fn(),
   NETWORK: 'Test SDF Network ; September 2015',
 }));
 
@@ -71,10 +72,8 @@ describe('useWallet', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     (global.fetch as jest.Mock) = jest.fn();
-    const { rpc } = jest.requireMock('@/lib/stellar');
-    rpc.getAccount.mockResolvedValue({
-      balances: [{ asset_type: 'native', balance: '10.0000000' }],
-    });
+    const { getXLMBalance } = jest.requireMock('@/lib/stellar');
+    getXLMBalance.mockResolvedValue(10);
     freighter.getPublicKey.mockResolvedValue(PUBLIC_KEY);
     freighter.signTransaction.mockResolvedValue(SIGNED_XDR);
     localStorage.clear();
@@ -110,17 +109,15 @@ describe('useWallet', () => {
     const accountPromise = new Promise((res) => {
       resolveAccount = res;
     });
-    const { rpc } = jest.requireMock('@/lib/stellar');
-    rpc.getAccount.mockReturnValueOnce(accountPromise);
+    const { getXLMBalance } = jest.requireMock('@/lib/stellar');
+    getXLMBalance.mockReturnValueOnce(accountPromise);
 
     const { result } = renderHook(() => useWallet(), { wrapper });
 
     expect(result.current.isRestoringSession).toBe(true);
 
     await act(async () => {
-      resolveAccount!({
-        balances: [{ asset_type: 'native', balance: '10.0000000' }],
-      });
+      resolveAccount!(10);
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -225,9 +222,9 @@ describe('useWallet', () => {
     });
   });
 
-  test('balanceError is set when rpc.getAccount throws a server error', async () => {
-    const { rpc } = jest.requireMock('@/lib/stellar');
-    rpc.getAccount.mockRejectedValue(new Error('Network error'));
+  test('balanceError is set when the balance lookup throws a server error', async () => {
+    const { getXLMBalance } = jest.requireMock('@/lib/stellar');
+    getXLMBalance.mockRejectedValue(new Error('Network error'));
 
     localStorage.setItem(
       'wallet_session',
@@ -244,9 +241,10 @@ describe('useWallet', () => {
     expect(result.current.balanceError).toMatch(/Network error/);
   });
 
-  test('xlmBalance is "0.0000000" when no native balance found', async () => {
-    const { rpc } = jest.requireMock('@/lib/stellar');
-    rpc.getAccount.mockResolvedValue({ balances: [] });
+  test('xlmBalance is "0.0000000" for an unfunded account', async () => {
+    const { getXLMBalance } = jest.requireMock('@/lib/stellar');
+    // getXLMBalance reports 0 for Horizon's 404 on unfunded accounts.
+    getXLMBalance.mockResolvedValue(0);
 
     localStorage.setItem(
       'wallet_session',

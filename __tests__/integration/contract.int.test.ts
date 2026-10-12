@@ -79,7 +79,7 @@ async function contractSimulate(
 ): Promise<unknown> {
   const contract = new Contract(contractId);
   const dummyAccount = new Account(
-    'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN',
+    'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF',
     '0',
   );
   const tx = new TransactionBuilder(dummyAccount, {

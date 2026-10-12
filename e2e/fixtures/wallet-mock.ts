@@ -74,6 +74,28 @@ export async function installMockFreighter(
     },
   );
 
+  // Two overlays sit on top of every page for a fresh browser and swallow
+  // clicks: the dashboards' onboarding tours (hooks/useOnboardingTour.ts)
+  // and the cookie-consent banner (components/ui/CookieConsentBanner.tsx).
+  // No spec exercises either, so record the choices the way the app does.
+  await page.addInitScript((publicKey: string) => {
+    window.localStorage.setItem('scoutoff:cookie-consent', 'declined');
+    for (const tour of [
+      'scout_dashboard',
+      'player_dashboard',
+      'validator_dashboard',
+    ]) {
+      window.localStorage.setItem(
+        `scout_tour_${tour}_${publicKey}`,
+        JSON.stringify({
+          isDismissed: true,
+          isCompleted: false,
+          currentStep: 0,
+        }),
+      );
+    }
+  }, activeKeypair.publicKey());
+
   await page.addInitScript(
     ({
       accountFn,

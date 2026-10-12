@@ -1,27 +1,44 @@
 import { test, expect } from './fixtures';
-import { mockSorobanRpc } from './fixtures/mock-contract';
+import { xdr } from '@stellar/stellar-sdk';
+import {
+  DEFAULT_PLAYER,
+  mockSorobanRpc,
+  scv,
+  type SorobanRpcMock,
+} from './fixtures/mock-contract';
+import { MOCK_UPLOAD_CID, mockChunkedUploadApi } from './fixtures/mock-upload';
 
 const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
   'base64',
 );
-const MOCK_IPFS_CID =
-  'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi';
 
 test.describe('wallet connect → player registration', () => {
   test('registers a player profile end to end with mocked contract calls', async ({
     page,
     wallet,
   }) => {
-    mockSorobanRpc(page);
-
-    await page.route('**/api/ipfs/upload', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ cid: MOCK_IPFS_CID }),
-      });
+    test.setTimeout(120_000);
+    // No profile for this wallet until register_player has been submitted;
+    // afterwards get_player returns the new on-chain record.
+    let rpc: SorobanRpcMock | null = null;
+    rpc = mockSorobanRpc(page, {
+      returns: {
+        get_player: () =>
+          rpc?.submitted.includes('register_player')
+            ? scv({
+                ...DEFAULT_PLAYER,
+                id: wallet.publicKey,
+                wallet: wallet.publicKey,
+                vitals: { ...DEFAULT_PLAYER.vitals, name: 'Ada Okafor' },
+                ipfsHash: MOCK_UPLOAD_CID,
+                progressLevel: 0,
+              })
+            : xdr.ScVal.scvVoid(),
+      },
     });
+
+    mockChunkedUploadApi(page, { totalChunks: 1 });
 
     await page.goto('/en');
     await page.getByRole('button', { name: 'Connect Wallet' }).click();
@@ -33,7 +50,7 @@ test.describe('wallet connect → player registration', () => {
       ),
     ).toBeVisible();
 
-    await page.goto('/en/player');
+    await page.goto('/en/player', { timeout: 60_000 });
 
     await page.getByLabel('Name *').fill('Ada Okafor');
     await page.getByLabel('Age *').fill('19');

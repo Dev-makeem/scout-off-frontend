@@ -24,7 +24,7 @@ import { mockSorobanRpc } from './fixtures/mock-contract';
 function makeSyntheticPlayers(count: number) {
   return Array.from({ length: count }, (_, i) => ({
     id: `perf-player-${i}`,
-    wallet: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN',
+    wallet: 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF',
     vitals: {
       name: `Perf Player ${i}`,
       age: 20 + (i % 15),
@@ -37,6 +37,39 @@ function makeSyntheticPlayers(count: number) {
     milestones: [],
     createdAt: 1700000000,
   }));
+}
+
+/**
+ * Scrolls the virtualized grid top → bottom (and back if `roundTrip`), one
+ * animation frame per step. Runs in the page. The grid is looked up on every
+ * step: a background revalidation can briefly remount it, and a stale
+ * element reference would scroll nothing.
+ */
+async function scrollGrid({
+  steps,
+  roundTrip,
+}: {
+  steps: number;
+  roundTrip: boolean;
+}) {
+  const grid = async () => {
+    for (let i = 0; i < 100; i++) {
+      const el = document.querySelector<HTMLElement>(
+        '[data-testid="player-grid"]',
+      );
+      if (el) return el;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    throw new Error('player-grid never appeared');
+  };
+  const frame = () => new Promise((r) => requestAnimationFrame(r));
+  const order = Array.from({ length: steps + 1 }, (_, i) => i);
+  for (const i of roundTrip ? [...order, ...order.reverse()] : order) {
+    const el = await grid();
+    el.scrollTop = ((el.scrollHeight - el.clientHeight) * i) / steps;
+    el.dispatchEvent(new Event('scroll'));
+    await frame();
+  }
 }
 
 test.describe('scout results grid — virtualization performance', () => {
@@ -108,25 +141,7 @@ test.describe('scout results grid — virtualization performance', () => {
     ).toBeLessThanOrEqual(MAX_MOUNTED_CARDS);
 
     // ── Scripted scroll: all the way down and back up ──────────────────────
-    await page.evaluate(async () => {
-      const el = document.querySelector(
-        '[data-testid="player-grid"]',
-      ) as HTMLElement;
-      const steps = 60;
-      const max = el.scrollHeight - el.clientHeight;
-      const wait = () => new Promise((r) => requestAnimationFrame(r));
-
-      for (let i = 0; i <= steps; i++) {
-        el.scrollTop = (max * i) / steps;
-        el.dispatchEvent(new Event('scroll'));
-        await wait();
-      }
-      for (let i = steps; i >= 0; i--) {
-        el.scrollTop = (max * i) / steps;
-        el.dispatchEvent(new Event('scroll'));
-        await wait();
-      }
-    });
+    await page.evaluate(scrollGrid, { steps: 60, roundTrip: true });
 
     // ── DOM bounding: after scrolling ──────────────────────────────────────
     const domCountAfterScroll = await page
@@ -163,9 +178,9 @@ test.describe('scout results grid — virtualization performance', () => {
     page,
     wallet,
   }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(120_000);
 
-    mockSorobanRpc(page, {
+    const rpc = mockSorobanRpc(page, {
       isValidator: false,
       subscription: {
         tier: 'pro',
@@ -193,41 +208,27 @@ test.describe('scout results grid — virtualization performance', () => {
 
     await page.goto('/en/scout');
 
-    let simulateCalls = 0;
-    page.on('request', (request) => {
-      if (request.method() !== 'POST') return;
-      if (!request.url().includes('soroban')) return;
-      try {
-        const body = request.postDataJSON();
-        if (body?.method === 'simulateTransaction') simulateCalls++;
-      } catch {
-        // non-JSON body, ignore
-      }
-    });
+    // Contract reads for milestone data issued from here on; unrelated
+    // polling (contract health / pause status) is left out of the count.
+    const milestoneReadsBefore = rpc.simulated.length;
+    const milestoneReads = () =>
+      rpc.simulated
+        .slice(milestoneReadsBefore)
+        .filter((method) => method.includes('milestone'));
 
     await page.getByLabel(/search by player name/i).fill('Perf Player');
-    await expect(page.getByText('200 players found')).toBeVisible({
+    await expect(
+      page.getByText('200 players found', { exact: true }).last(),
+    ).toBeVisible({
       timeout: 10_000,
     });
 
     const grid = page.getByTestId('player-grid');
-    await page.evaluate(async () => {
-      const el = document.querySelector(
-        '[data-testid="player-grid"]',
-      ) as HTMLElement;
-      const wait = () => new Promise((r) => requestAnimationFrame(r));
-      for (let i = 0; i <= 10; i++) {
-        el.scrollTop = (el.scrollHeight * i) / 10;
-        el.dispatchEvent(new Event('scroll'));
-        await wait();
-      }
-    });
+    await page.evaluate(scrollGrid, { steps: 10, roundTrip: false });
     await expect(grid).toBeVisible();
 
-    // A handful of simulate calls (subscription check, validator check,
-    // one batched milestone fetch) — not one per player, and not one per
-    // scroll step. 200 players scrolled through must not produce anywhere
-    // near 200 simulate calls.
-    expect(simulateCalls).toBeLessThan(10);
+    // One batched milestone fetch for the whole result set — not one per
+    // player, and not one per scroll step.
+    await expect.poll(milestoneReads).toEqual(['get_milestone_history_batch']);
   });
 });
