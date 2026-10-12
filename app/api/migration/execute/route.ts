@@ -14,7 +14,8 @@
  * not yet expose a transfer_player entrypoint. The response includes a
  * notice explaining this limitation.
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { privateJson } from '@/lib/httpResponses';
 import { getSessionWallet } from '@/lib/session';
 import { MigrationStore, COOLING_OFF_MS } from '@/lib/migrationStore';
 import { executeWalletMigration } from '@/lib/walletMigration';
@@ -27,29 +28,26 @@ export async function POST(req: NextRequest) {
 
   const wallet = getSessionWallet(req);
   if (!wallet) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return privateJson({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
   const { requestId } = (body ?? {}) as Record<string, unknown>;
   if (typeof requestId !== 'string' || !requestId.trim()) {
-    return NextResponse.json(
-      { error: 'requestId is required' },
-      { status: 400 },
-    );
+    return privateJson({ error: 'requestId is required' }, { status: 400 });
   }
 
   const store = MigrationStore.getInstance();
   const migReq = store.get(requestId.trim());
 
   if (!migReq) {
-    return NextResponse.json(
+    return privateJson(
       { error: 'Migration request not found' },
       { status: 404 },
     );
@@ -57,7 +55,7 @@ export async function POST(req: NextRequest) {
 
   // Only the destination wallet may execute
   if (migReq.toWallet !== wallet) {
-    return NextResponse.json(
+    return privateJson(
       {
         error:
           'Forbidden: only the destination wallet may execute this migration',
@@ -67,25 +65,25 @@ export async function POST(req: NextRequest) {
   }
 
   if (migReq.status === 'cancelled') {
-    return NextResponse.json(
+    return privateJson(
       { error: 'This migration request has been cancelled' },
       { status: 409 },
     );
   }
   if (migReq.status === 'completed') {
-    return NextResponse.json(
+    return privateJson(
       { error: 'This migration has already been completed' },
       { status: 409 },
     );
   }
   if (migReq.status === 'failed') {
-    return NextResponse.json(
+    return privateJson(
       { error: 'This migration failed. Please submit a new request.' },
       { status: 409 },
     );
   }
   if (migReq.status !== 'pending') {
-    return NextResponse.json(
+    return privateJson(
       { error: `Cannot execute migration in status '${migReq.status}'` },
       { status: 409 },
     );
@@ -96,7 +94,7 @@ export async function POST(req: NextRequest) {
   if (now < migReq.executeAfter) {
     const remainingMs = migReq.executeAfter - now;
     const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000));
-    return NextResponse.json(
+    return privateJson(
       {
         error: `Cooling-off period has not elapsed. Please wait ${remainingHours} more hour(s) before executing.`,
         executeAfter: migReq.executeAfter,
@@ -124,7 +122,7 @@ export async function POST(req: NextRequest) {
       counts: result.counts,
     });
 
-    return NextResponse.json({
+    return privateJson({
       request: completed,
       migration: result,
     });
@@ -132,7 +130,7 @@ export async function POST(req: NextRequest) {
     const reason = err instanceof Error ? err.message : String(err);
     log.error('Wallet migration failed', { id: migReq.id, reason });
     store.markFailed(migReq.id, reason);
-    return NextResponse.json(
+    return privateJson(
       { error: `Migration failed: ${reason}` },
       { status: 500 },
     );

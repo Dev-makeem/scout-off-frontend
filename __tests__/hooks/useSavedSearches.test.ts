@@ -112,7 +112,7 @@ describe('useSavedSearches', () => {
       await Promise.resolve();
     });
 
-    expect(mockRemove).toHaveBeenCalledWith(1);
+    expect(mockRemove).toHaveBeenCalledWith(1, undefined);
   });
 
   test('undo restores the entry and the DELETE call never fires', async () => {
@@ -170,7 +170,7 @@ describe('useSavedSearches', () => {
       await result.current.markViewed(ENTRY);
     });
 
-    expect(mockMarkViewed).toHaveBeenCalledWith(1);
+    expect(mockMarkViewed).toHaveBeenCalledWith(1, undefined);
     expect(result.current.searches[0].lastViewedAt).toBe(12345);
   });
 });

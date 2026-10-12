@@ -59,22 +59,29 @@ function baseRevenue(
   };
 }
 
+/** YYYY-MM-DD for `n` days ago, so fixtures stay inside the 30d window. */
+function daysAgo(n: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
 const POPULATED_DATA: FeeRevenueData = {
   daily: [
     {
-      date: '2026-08-18',
+      date: daysAgo(3),
       contactFeeXlm: 3,
       subscriptionXlm: 7,
       totalXlm: 10,
     },
     {
-      date: '2026-08-19',
+      date: daysAgo(2),
       contactFeeXlm: 5,
       subscriptionXlm: 9,
       totalXlm: 14,
     },
     {
-      date: '2026-08-20',
+      date: daysAgo(1),
       contactFeeXlm: 2,
       subscriptionXlm: 12,
       totalXlm: 14,

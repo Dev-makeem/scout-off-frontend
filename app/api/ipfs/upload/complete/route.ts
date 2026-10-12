@@ -1,11 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { apiError, ApiErrorCode } from '@/lib/apiErrors';
 import { privateJson } from '@/lib/httpResponses';
+import { upstreamStatus } from '@/lib/httpClient';
 import {
   prepareStreamedAssembly,
   cleanupSession,
   getSessionStatus,
   isSessionOwner,
+  SizeMismatchError,
 } from '@/lib/chunkedUploadStore';
 import {
   buildStreamingMultipartBody,
@@ -64,10 +66,7 @@ async function postCompleteUpload(req: NextRequest) {
     log.error('Pinata credentials missing; IPFS uploads disabled', {
       missing: getMissingPinataEnvVars().join(', '),
     });
-    return NextResponse.json(
-      { error: PINATA_NOT_CONFIGURED_ERROR },
-      { status: 503 },
-    );
+    return privateJson({ error: PINATA_NOT_CONFIGURED_ERROR }, { status: 503 });
   }
   const wallet = getSessionWallet(req);
   const ip = getClientIp(req);
@@ -109,6 +108,16 @@ async function postCompleteUpload(req: NextRequest) {
       sessionId,
       reason: err instanceof Error ? err.message : String(err),
     });
+    // The store already dropped the poisoned session; the client must restart.
+    if (err instanceof SizeMismatchError) {
+      return privateJson(
+        {
+          error:
+            'Uploaded size does not match the declared file size. Please restart the upload.',
+        },
+        { status: 400 },
+      );
+    }
     const session = await getSessionStatus(sessionId).catch(() => null);
     if (session) {
       const received = session.receivedChunks.length;

@@ -18,16 +18,14 @@ describe('SettingsLoading', () => {
   });
 
   it('renders skeleton sections matching the settings page layout', () => {
-    render(<SettingsLoading />);
+    const { container } = render(<SettingsLoading />);
 
     // Header section
-    const header = container?.querySelector('section');
+    const header = container.querySelector('section');
     expect(header).toBeInTheDocument();
 
     // Multiple sections (notification, session, export, deletion)
-    const sections = screen.getAllByRole('generic').filter(
-      (el) => el.tagName === 'SECTION'
-    );
+    const sections = container.querySelectorAll('section');
     expect(sections.length).toBeGreaterThanOrEqual(4);
   });
 });

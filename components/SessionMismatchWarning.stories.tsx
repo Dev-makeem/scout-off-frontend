@@ -6,8 +6,10 @@ import { ToastProvider } from './ui/Toast';
 const messages = {
   session: {
     mismatchTitle: 'Session mismatch detected',
-    mismatchMessage: 'The wallet address shown ({address}) differs from the identity your session is authenticated to.',
-    mismatchExplanation: 'This may happen if you switched accounts in your wallet extension without logging out first.',
+    mismatchMessage:
+      'The wallet address shown ({address}) differs from the identity your session is authenticated to.',
+    mismatchExplanation:
+      'This may happen if you switched accounts in your wallet extension without logging out first.',
     reauthenticate: 'Re-authenticate',
     dismiss: 'Dismiss',
   },

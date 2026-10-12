@@ -8,7 +8,8 @@
  * aggregated (202 with `duplicate: true`) rather than stacked.
  */
 import crypto from 'crypto';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { privateJson } from '@/lib/httpResponses';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 import { getSessionWallet } from '@/lib/session';
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
 
   const rate = await checkRateLimit(`media-report:${ip}`, RATE_LIMIT);
   if (rate.limited) {
-    return NextResponse.json(
+    return privateJson(
       { error: 'Too many reports. Please try again later.' },
       {
         status: 429,
@@ -49,31 +50,31 @@ export async function POST(req: NextRequest) {
     unknown
   > | null;
   if (!body) {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return privateJson({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
   const { cid, playerId, reason, details, turnstileToken } = body;
   if (!isValidMediaCid(cid)) {
-    return NextResponse.json({ error: 'Invalid cid' }, { status: 400 });
+    return privateJson({ error: 'Invalid cid' }, { status: 400 });
   }
   if (!isMediaReportReason(reason)) {
-    return NextResponse.json({ error: 'Invalid reason' }, { status: 400 });
+    return privateJson({ error: 'Invalid reason' }, { status: 400 });
   }
   if (playerId !== undefined && typeof playerId !== 'string') {
-    return NextResponse.json({ error: 'Invalid playerId' }, { status: 400 });
+    return privateJson({ error: 'Invalid playerId' }, { status: 400 });
   }
   if (
     details !== undefined &&
     (typeof details !== 'string' || details.length > MAX_DETAILS_LENGTH)
   ) {
-    return NextResponse.json(
+    return privateJson(
       { error: `details must be at most ${MAX_DETAILS_LENGTH} characters` },
       { status: 400 },
     );
   }
 
   if (!(await verifyTurnstileToken(turnstileToken, ip))) {
-    return NextResponse.json(
+    return privateJson(
       {
         error:
           'Bot-protection challenge failed. Please complete the challenge and try again.',
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
       details: (details as string | undefined)?.trim() || null,
       reporterKey: reporterKey(req, ip),
     });
-    return NextResponse.json(
+    return privateJson(
       { ok: true, duplicate: !created },
       { status: created ? 201 : 202 },
     );
@@ -98,9 +99,6 @@ export async function POST(req: NextRequest) {
     log.error('Failed to record media report', {
       reason: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json(
-      { error: 'Failed to record report' },
-      { status: 500 },
-    );
+    return privateJson({ error: 'Failed to record report' }, { status: 500 });
   }
 }

@@ -9,7 +9,7 @@ import type { NotificationPreferences } from '@/types';
 // `messageKey` indexes `notifications.preferences.<messageKey>_label` and
 // `_description` in messages/*.json.
 const CATEGORIES: {
-  key: keyof NotificationPreferences;
+  key: Exclude<keyof NotificationPreferences, 'version'>;
   messageKey: 'milestone_approvals' | 'contact_unlocks';
 }[] = [
   { key: 'milestoneApprovals', messageKey: 'milestone_approvals' },

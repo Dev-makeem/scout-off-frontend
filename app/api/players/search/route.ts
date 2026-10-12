@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiError, ApiErrorCode } from '@/lib/apiErrors';
-import axios from 'axios';
+import {
+  createClient,
+  SEARCH_TIMEOUT_MS,
+  upstreamStatus,
+} from '@/lib/httpClient';
 import { createRequestLogger } from '@/lib/logger';
 import { getClientIp, checkRateLimit } from '@/lib/rateLimit';
 import { withOutboundSpan, withRouteTelemetry } from '@/lib/telemetry';

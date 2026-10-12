@@ -111,6 +111,8 @@ describe('GET /api/disputes', () => {
     MilestoneDisputeStore.getInstance().create({
       playerId: 'p1',
       playerWallet: SCOUT,
+      validatorWallet:
+        'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       milestoneId: 'm1',
       milestoneDescription: 'desc',
       reason: 'this is a valid reason',
@@ -118,6 +120,8 @@ describe('GET /api/disputes', () => {
     MilestoneDisputeStore.getInstance().create({
       playerId: 'p2',
       playerWallet: OTHER,
+      validatorWallet:
+        'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       milestoneId: 'm2',
       milestoneDescription: 'desc',
       reason: 'this is a valid reason',
@@ -136,6 +140,8 @@ describe('GET /api/disputes', () => {
     MilestoneDisputeStore.getInstance().create({
       playerId: 'p1',
       playerWallet: SCOUT,
+      validatorWallet:
+        'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       milestoneId: 'm1',
       milestoneDescription: 'desc',
       reason: 'this is a valid reason',
@@ -143,6 +149,8 @@ describe('GET /api/disputes', () => {
     MilestoneDisputeStore.getInstance().create({
       playerId: 'p2',
       playerWallet: OTHER,
+      validatorWallet:
+        'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       milestoneId: 'm2',
       milestoneDescription: 'desc',
       reason: 'this is a valid reason',
@@ -161,6 +169,8 @@ describe('GET /api/disputes', () => {
     const d = store.create({
       playerId: 'p1',
       playerWallet: SCOUT,
+      validatorWallet:
+        'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       milestoneId: 'm1',
       milestoneDescription: 'desc',
       reason: 'this is a valid reason',
@@ -174,6 +184,8 @@ describe('GET /api/disputes', () => {
     store.create({
       playerId: 'p2',
       playerWallet: OTHER,
+      validatorWallet:
+        'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       milestoneId: 'm2',
       milestoneDescription: 'desc',
       reason: 'this is a valid reason',
@@ -406,6 +418,8 @@ describe('POST /api/disputes', () => {
     MilestoneDisputeStore.getInstance().create({
       playerId: 'p1',
       playerWallet: SCOUT,
+      validatorWallet:
+        'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       milestoneId: 'm1',
       milestoneDescription: 'Real on-chain description',
       reason: 'this is a valid reason',

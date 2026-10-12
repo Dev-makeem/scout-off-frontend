@@ -241,7 +241,9 @@ jobs:
       - run: npm ci
 
       - name: Test backend
-        run: node --test --experimental-test-coverage test/
+        # Node 22+ treats --test args as globs, so a bare directory no longer
+        # expands to the files inside it.
+        run: node --test --experimental-test-coverage 'test/**/*.test.js'
 
   build:
     # Standalone build job — separated from the `lint` job so its

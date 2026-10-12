@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { privateJson } from '@/lib/httpResponses';
 import { getSessionWallet } from '@/lib/session';
 import { requireAdminWallet } from '@/lib/adminAuth';
 import { MilestoneDisputeStore } from '@/lib/milestoneDisputeStore';
@@ -49,18 +50,18 @@ export async function POST(
 ) {
   const wallet = getSessionWallet(req);
   if (!wallet) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const id = Number(params.id);
   if (!Number.isInteger(id) || id <= 0) {
-    return NextResponse.json({ error: 'Invalid dispute id' }, { status: 400 });
+    return privateJson({ error: 'Invalid dispute id' }, { status: 400 });
   }
 
   const log = createRequestLogger(req);
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return privateJson({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
   const {
@@ -72,13 +73,13 @@ export async function POST(
   // ── Input validation ──────────────────────────────────────────────────────
 
   if (typeof ipfsHash !== 'string' || !ipfsHash.trim()) {
-    return NextResponse.json(
-      { error: 'ipfsHash is required' },
-      { status: 400 },
-    );
+    return privateJson({ error: 'ipfsHash is required' }, { status: 400 });
   }
-  if (typeof ipfsMimeType !== 'string' || !ALLOWED_MIME_TYPES.has(ipfsMimeType)) {
-    return NextResponse.json(
+  if (
+    typeof ipfsMimeType !== 'string' ||
+    !ALLOWED_MIME_TYPES.has(ipfsMimeType)
+  ) {
+    return privateJson(
       {
         error: `ipfsMimeType must be one of: ${[...ALLOWED_MIME_TYPES].join(', ')}`,
       },
@@ -91,7 +92,7 @@ export async function POST(
   if (rawText !== null) {
     const validation = validateTextField('disputeReason', rawText);
     if (!validation.valid) {
-      return NextResponse.json(
+      return privateJson(
         { error: `body: ${validation.error}` },
         { status: 400 },
       );
@@ -105,7 +106,7 @@ export async function POST(
   const dispute = store.findById(id);
 
   if (!dispute) {
-    return NextResponse.json({ error: 'Dispute not found' }, { status: 404 });
+    return privateJson({ error: 'Dispute not found' }, { status: 404 });
   }
 
   // ── Access control + role detection ──────────────────────────────────────
@@ -115,12 +116,12 @@ export async function POST(
   const isValidator = dispute.validatorWallet === wallet;
 
   if (!isAdmin && !isPlayer && !isValidator) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return privateJson({ error: 'Forbidden' }, { status: 403 });
   }
 
   // Terminal statuses: no more evidence after a final decision.
   if (dispute.status === 'upheld' || dispute.status === 'reversed') {
-    return NextResponse.json(
+    return privateJson(
       { error: 'Dispute is already decided; no further evidence can be added' },
       { status: 409 },
     );
@@ -128,7 +129,7 @@ export async function POST(
 
   // Validators may not post evidence on an already-escalated dispute.
   if (isValidator && !isAdmin && dispute.status === 'escalated') {
-    return NextResponse.json(
+    return privateJson(
       {
         error:
           'The response window for this dispute has elapsed. Contact the admin to request an extension.',
@@ -144,7 +145,7 @@ export async function POST(
     try {
       const onChain = await checkIsValidator(wallet);
       if (!onChain) {
-        return NextResponse.json(
+        return privateJson(
           {
             error:
               'Your wallet is no longer an authorized validator on-chain and cannot respond to disputes.',
@@ -157,7 +158,7 @@ export async function POST(
         wallet,
         reason: err instanceof Error ? err.message : String(err),
       });
-      return NextResponse.json(
+      return privateJson(
         { error: 'Could not verify validator status — please try again' },
         { status: 503 },
       );
@@ -191,15 +192,12 @@ export async function POST(
       ipfsMimeType,
     });
 
-    return NextResponse.json(event, { status: 201 });
+    return privateJson(event, { status: 201 });
   } catch (err) {
     log.error('Failed to add evidence', {
       disputeId: id,
       reason: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json(
-      { error: 'Failed to add evidence' },
-      { status: 500 },
-    );
+    return privateJson({ error: 'Failed to add evidence' }, { status: 500 });
   }
 }

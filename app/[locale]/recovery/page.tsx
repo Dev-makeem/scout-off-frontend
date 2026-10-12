@@ -575,10 +575,11 @@ export default function AccountRecoveryPage() {
 
             {/* Show migration counts */}
             {migrationResult.migration != null &&
-              typeof migrationResult.migration === 'object' ? (
+            typeof migrationResult.migration === 'object' ? (
               <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4 text-sm space-y-1">
                 {Object.entries(
-                  ((migrationResult.migration as Record<string, unknown>).counts ?? {}) as Record<string, string | number | boolean>,
+                  ((migrationResult.migration as Record<string, unknown>)
+                    .counts ?? {}) as Record<string, string | number | boolean>,
                 ).map(([key, value]) => (
                   <div key={key} className="flex justify-between">
                     <span className="text-gray-400 capitalize">

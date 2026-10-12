@@ -6,7 +6,8 @@ import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import { TEXT_FIELD_LIMITS } from '@/lib/inputValidation';
 
-const { min: MIN_REASON_LENGTH, max: MAX_REASON_LENGTH } = TEXT_FIELD_LIMITS.disputeReason;
+const { min: MIN_REASON_LENGTH, max: MAX_REASON_LENGTH } =
+  TEXT_FIELD_LIMITS.disputeReason;
 
 interface DisputeMilestoneModalProps {
   isOpen: boolean;
@@ -99,7 +100,10 @@ export default function DisputeMilestoneModal({
             className="text-xs text-gray-400 mt-1 text-right"
             aria-live={isNearLimit ? 'polite' : undefined}
           >
-            {tCounter('character_count', { count: currentLength, max: MAX_REASON_LENGTH })}
+            {tCounter('character_count', {
+              count: currentLength,
+              max: MAX_REASON_LENGTH,
+            })}
           </p>
         </div>
 

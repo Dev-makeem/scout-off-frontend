@@ -25,9 +25,9 @@ describe('BulkImportLoading', () => {
     expect(title).toBeInTheDocument();
 
     // Upload section and preview table
-    const sections = screen.getAllByRole('generic').filter(
-      (el) => el.tagName === 'SECTION'
-    );
+    const sections = screen
+      .getAllByRole('generic')
+      .filter((el) => el.tagName === 'SECTION');
     expect(sections.length).toBeGreaterThanOrEqual(2);
   });
 });

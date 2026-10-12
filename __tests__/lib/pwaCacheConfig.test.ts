@@ -150,7 +150,11 @@ describe('clearUserCaches helper', () => {
     const mockCaches = {
       keys: jest
         .fn()
-        .mockResolvedValue(['api-cache', 'static-assets', 'player-scout-data-cache']),
+        .mockResolvedValue([
+          'api-cache',
+          'static-assets',
+          'player-scout-data-cache',
+        ]),
       delete: mockDelete,
     };
 

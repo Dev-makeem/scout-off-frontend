@@ -25,7 +25,9 @@ function getPrivateKey() {
 
 function getPublicKey() {
   const configured = process.env.CV_SIGNING_PUBLIC_KEY;
-  return configured ? createPublicKey(configured) : createPublicKey(getPrivateKey());
+  return configured
+    ? createPublicKey(configured)
+    : createPublicKey(getPrivateKey());
 }
 
 export function hashCanonicalCvContent(canonicalContent: string): string {
@@ -39,7 +41,7 @@ export function createCvToken(payload: CvSigningPayload): string {
     new Uint8Array(Buffer.from(encodedPayload)),
     getPrivateKey(),
   );
-  return `${encodedPayload}.${base64UrlEncode(signature)}`;
+  return `${encodedPayload}.${base64UrlEncode(new Uint8Array(signature))}`;
 }
 
 export function verifyCvToken(token: string): CvSigningPayload | null {
@@ -49,7 +51,7 @@ export function verifyCvToken(token: string): CvSigningPayload | null {
   try {
     const valid = verify(
       null,
-      Buffer.from(encodedPayload),
+      new Uint8Array(Buffer.from(encodedPayload)),
       getPublicKey(),
       new Uint8Array(base64UrlDecode(encodedSignature)),
     );

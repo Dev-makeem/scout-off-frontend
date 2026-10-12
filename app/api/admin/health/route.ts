@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { requireAdminWallet } from '@/lib/adminAuth';
 import { getSessionWallet } from '@/lib/session';
 import { privateJson } from '@/lib/httpResponses';
@@ -19,7 +19,13 @@ const FETCH_TIMEOUT_MS = 5000;
 // Only these fields of a subsystem's /health payload are passed through to
 // the client (#1326) — anything else the internal service returns stays
 // server-side.
-const DETAIL_FIELDS = ['status', 'lastLedger', 'uptime'] as const;
+const DETAIL_FIELDS = [
+  'status',
+  'lastLedger',
+  'ledgerLag',
+  'pollerRunning',
+  'uptime',
+] as const;
 
 function pickDetail(data: Record<string, unknown>): Record<string, unknown> {
   const detail: Record<string, unknown> = {};
@@ -99,8 +105,8 @@ async function checkEndpoint(
 export async function GET(req: NextRequest) {
   if (!requireAdminWallet(req)) {
     return getSessionWallet(req)
-      ? NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      : NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      ? privateJson({ error: 'Forbidden' }, { status: 403 })
+      : privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // Each check is independent — a rejected/aborted fetch to one service

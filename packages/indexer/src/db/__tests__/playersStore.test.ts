@@ -22,6 +22,7 @@ function makeEvent(
     ledger: 100,
     timestamp: 1_700_000_000,
     data: { player_id: 'p1', wallet: 'GWALLET' },
+    contractVersion: 1,
     eventId: `players-test-${eventIdSeq}`,
     ...overrides,
   };
@@ -59,6 +60,7 @@ function register(
   }
   return makeEvent({
     type: 'player_registered',
+    contractVersion: 1,
     ledger,
     timestamp,
     data,
@@ -137,6 +139,7 @@ describe('players projection', () => {
     store.insertEvent(
       makeEvent({
         type: 'profile_updated',
+        contractVersion: 1,
         ledger: 200,
         data: {
           player_id: 'p1',
@@ -159,6 +162,7 @@ describe('players projection', () => {
     store.insertEvent(
       makeEvent({
         type: 'milestone_approved',
+        contractVersion: 1,
         ledger: 150,
         data: { player_id: 'p1', milestone_id: 'm1', new_level: 2 },
       }),
@@ -173,6 +177,7 @@ describe('players projection', () => {
     store.insertEvent(
       makeEvent({
         type: 'milestone_approved',
+        contractVersion: 1,
         ledger: 150,
         data: { player_id: 'p1', milestone_id: 'm2', new_level: 3 },
       }),
@@ -180,6 +185,7 @@ describe('players projection', () => {
     store.insertEvent(
       makeEvent({
         type: 'milestone_approved',
+        contractVersion: 1,
         ledger: 140, // replayed/late lower level
         data: { player_id: 'p1', milestone_id: 'm0', new_level: 1 },
       }),
@@ -194,6 +200,7 @@ describe('players projection', () => {
     store.insertEvent(
       makeEvent({
         type: 'milestone_approved',
+        contractVersion: 1,
         ledger: 150,
         data: { player_id: 'p1', milestone_id: 'm1', new_level: 1 },
       }),
@@ -201,6 +208,7 @@ describe('players projection', () => {
     store.insertEvent(
       makeEvent({
         type: 'milestone_revoked',
+        contractVersion: 1,
         ledger: 160,
         data: { player_id: 'p1', milestone_id: 'm1' },
       }),
@@ -210,6 +218,7 @@ describe('players projection', () => {
     store.insertEvent(
       makeEvent({
         type: 'milestone_revoked',
+        contractVersion: 1,
         ledger: 170,
         data: { player_id: 'p1', milestone_id: 'm-other' },
       }),
@@ -224,6 +233,7 @@ describe('players projection', () => {
 
     const approve = makeEvent({
       type: 'milestone_approved',
+      contractVersion: 1,
       ledger: 150,
       data: { player_id: 'p1', milestone_id: 'm1', new_level: 2 },
     });
@@ -237,6 +247,7 @@ describe('players projection', () => {
     store.insertEvent(
       makeEvent({
         type: 'milestone_approved',
+        contractVersion: 1,
         ledger: 50,
         data: { player_id: 'late', milestone_id: 'm1', new_level: 1 },
       }),
@@ -276,6 +287,7 @@ describe('getPlayers filters', () => {
     store.insertEvent(
       makeEvent({
         type: 'milestone_approved',
+        contractVersion: 1,
         ledger: 50,
         data: { player_id: 'c', milestone_id: 'm1', new_level: 2 },
       }),

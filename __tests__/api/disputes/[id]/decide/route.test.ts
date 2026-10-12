@@ -38,6 +38,7 @@ function createPendingDispute() {
   return MilestoneDisputeStore.getInstance().create({
     playerId: 'p1',
     playerWallet: SCOUT,
+    validatorWallet: 'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     milestoneId: 'm1',
     milestoneDescription: 'desc',
     reason: 'this is a valid reason',

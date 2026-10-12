@@ -25,9 +25,9 @@ describe('AcademyRosterLoading', () => {
     expect(title).toBeInTheDocument();
 
     // Academy selector and members list
-    const sections = screen.getAllByRole('generic').filter(
-      (el) => el.tagName === 'SECTION'
-    );
+    const sections = screen
+      .getAllByRole('generic')
+      .filter((el) => el.tagName === 'SECTION');
     expect(sections.length).toBeGreaterThanOrEqual(2);
   });
 });

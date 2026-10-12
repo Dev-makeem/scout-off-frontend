@@ -322,11 +322,9 @@ describe('PendingMilestoneQueue', () => {
         screen.getByLabelText('Select milestone for Alex Okafor'),
       );
       const bulkButton = screen.getByRole('button', { name: /Bulk Approve/ });
-      expect(bulkButton).toBeDisabled();
-      expect(bulkButton).toHaveAttribute(
-        'title',
-        'Contract is currently paused',
-      );
+      expect(bulkButton).toHaveAttribute('aria-disabled', 'true');
+      // The global next-intl mock echoes keys (contract_status.paused_hint).
+      expect(bulkButton).toHaveAccessibleDescription('paused_hint');
     });
   });
 

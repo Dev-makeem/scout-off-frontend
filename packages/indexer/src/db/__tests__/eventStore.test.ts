@@ -19,6 +19,7 @@ function makeDecoded(
     ledger: 100,
     timestamp: 1_700_000_000,
     data: { player_id: 'player-1', milestone_id: 'm1', validator: 'GVAL' },
+    contractVersion: 1,
     eventId: `test-event-${eventIdSeq}`,
     ...overrides,
   };

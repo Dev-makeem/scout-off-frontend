@@ -33,6 +33,7 @@ function registration(i: number): DecodedEvent {
   const ledger = 1_000_000 + i;
   return {
     type: 'player_registered',
+    contractVersion: 1,
     ledger,
     timestamp: 1_700_000_000 + i,
     data: {
@@ -56,6 +57,7 @@ function approval(i: number, level: number): DecodedEvent {
   const ledger = 2_000_000 + i;
   return {
     type: 'milestone_approved',
+    contractVersion: 1,
     ledger,
     timestamp: 1_700_100_000 + i,
     data: {

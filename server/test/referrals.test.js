@@ -12,6 +12,9 @@ const tmpDbPath = path.join(
   'test.db',
 );
 process.env.DB_PATH = tmpDbPath;
+// This file calls the Turnstile-gated /referrals/generate more than the
+// production per-minute cap (RATE_LIMIT_TURNSTILE_MAX, default 10) allows.
+process.env.RATE_LIMIT_TURNSTILE_MAX = '1000';
 
 const createApp = require('../src/app');
 

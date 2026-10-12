@@ -1,3 +1,4 @@
+/** @jest-environment node */
 import { nativeToScVal, xdr } from '@stellar/stellar-sdk';
 import fixtures from '../__fixtures__/v1-events.json';
 import { decodeSorobanEvent } from '..';

@@ -11,9 +11,8 @@ jest.mock('@stellar/stellar-sdk', () => ({
   })),
   nativeToScVal: jest.fn().mockReturnValue({}),
   scValToNative: jest.fn().mockReturnValue({}),
-  xdr: {
-    Operation: { restoreFootprint: jest.fn().mockReturnValue({}) },
-  },
+  xdr: {},
+  Operation: { restoreFootprint: jest.fn().mockReturnValue({}) },
   TransactionBuilder: jest.fn().mockImplementation(() => ({
     addOperation: jest.fn().mockReturnThis(),
     setSorobanData: jest.fn().mockReturnThis(),
@@ -157,14 +156,12 @@ describe('buildRegisterPlayer', () => {
         },
       } as any);
     const restoreSigner = jest.fn().mockResolvedValue('signed-restore-xdr');
+    mockSignAndSubmitTx.mockImplementationOnce((xdr, signFn) => signFn(xdr));
 
     await buildRegisterPlayer(VALID_ADDRESS, vitals, 'QmHash', restoreSigner);
 
     expect(restoreSigner).toHaveBeenCalledWith('mock-xdr');
-    expect(mockSignAndSubmitTx).toHaveBeenCalledWith(
-      'mock-xdr',
-      restoreSigner,
-    );
+    expect(mockSignAndSubmitTx).toHaveBeenCalledWith('mock-xdr', restoreSigner);
     expect(mockRpc.prepareTransaction).toHaveBeenCalled();
   });
 

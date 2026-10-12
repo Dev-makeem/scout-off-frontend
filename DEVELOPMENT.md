@@ -342,13 +342,13 @@ frontend only performs it when Soroban says it is necessary.
 The operational TTL strategy is deliberately two-tiered:
 
 - The indexer should periodically identify active player records and submit a
-   low-frequency `extendFootprintTtl` transaction for those footprints using a
-   funded maintenance wallet. Extend only records that have recent profile or
-   milestone activity; extending every historical record indefinitely creates a
-   recurring XLM cost with no product value.
+  low-frequency `extendFootprintTtl` transaction for those footprints using a
+  funded maintenance wallet. Extend only records that have recent profile or
+  milestone activity; extending every historical record indefinitely creates a
+  recurring XLM cost with no product value.
 - The wallet restoration path remains the fallback for long-inactive players.
-   It is user-authorized, pays only when a player is actually accessed or
-   updated, and does not require the platform to hold player-wallet keys.
+  It is user-authorized, pays only when a player is actually accessed or
+  updated, and does not require the platform to hold player-wallet keys.
 
 The indexer maintenance job must monitor its last successful ledger and XLM
 balance. If it is unavailable, archival is expected behavior rather than a

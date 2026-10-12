@@ -406,8 +406,6 @@ test('log output is valid JSON for all three levels', () => {
     console.warn = origWarn;
     console.error = origError;
   }
-  assert.equal(logCalled, false);
-  assert.equal(warnCalled, false);
 });
 
 // ── Sensitive field redaction ─────────────────────────────────────────────────

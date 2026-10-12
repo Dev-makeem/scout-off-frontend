@@ -55,7 +55,8 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
 
   try {
     const player = (await getPlayer(signed.playerId)) as Player;
-    const milestones = ((await getMilestoneHistory(signed.playerId)) as Milestone[]) ?? [];
+    const milestones =
+      ((await getMilestoneHistory(signed.playerId)) as Milestone[]) ?? [];
     const currentHash = hashCanonicalCvContent(
       canonicalizeCvContent(buildCvContent(player, milestones)),
     );
@@ -70,7 +71,9 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
       );
     }
 
-    const signedIds = new Set(signed.ledger.map((reference) => reference.milestoneId));
+    const signedIds = new Set(
+      signed.ledger.map((reference) => reference.milestoneId),
+    );
     const currentIds = new Set(milestones.map((milestone) => milestone.id));
     const hasOnlyNewMilestones =
       signedIds.size < currentIds.size &&

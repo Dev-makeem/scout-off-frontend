@@ -158,18 +158,18 @@ describe('useContractEvents – polling fallback (no EventSource)', () => {
     expect(result.current.events[0].type).toBe('player_registered');
   });
 
-  it('maps invoke_host_function with trial hint to trial_offer_logged', async () => {
-    mockFetch([makeOp('3', 'log_trial')]);
+  it('maps invoke_host_function log_trial_offer to trial_offer_logged', async () => {
+    mockFetch([makeOp('3', 'log_trial_offer')]);
     const { result } = renderHook(() => useContractEvents(CONTRACT));
     await waitFor(() => expect(result.current.events).toHaveLength(1));
     expect(result.current.events[0].type).toBe('trial_offer_logged');
   });
 
-  it('defaults to milestone_approved for generic invoke_host_function', async () => {
+  it('reports an unrecognised invoke_host_function as unknown rather than guessing', async () => {
     mockFetch([makeOp('4')]);
     const { result } = renderHook(() => useContractEvents(CONTRACT));
     await waitFor(() => expect(result.current.events).toHaveLength(1));
-    expect(result.current.events[0].type).toBe('milestone_approved');
+    expect(result.current.events[0].type).toBe('unknown');
   });
 
   // ── AC-1: new operation appended between polls appears in state ────────

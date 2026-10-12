@@ -57,7 +57,11 @@ export function withRouteTelemetry<
       },
       async (span) => {
         try {
-          const response = await handler(request, context);
+          const response = await (
+            handler as unknown as (
+              ...args: unknown[]
+            ) => Response | Promise<Response>
+          )(request, context);
           const durationMs = Math.round(performance.now() - startedAt);
           span.setAttribute('http.status_class', statusClass(response.status));
           span.setAttribute('http.duration_ms', durationMs);
@@ -79,7 +83,7 @@ export function withRouteTelemetry<
         }
       },
     ) as ReturnType<T>;
-  }) as T;
+  }) as unknown as T;
 
   return wrapped;
 }

@@ -76,7 +76,8 @@ describe('FeeRevenueChart component', () => {
       data: {
         daily: [
           {
-            date: '2026-08-20',
+            // Yesterday, so it stays inside the default 30d window.
+            date: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10),
             contactFeeXlm: 2,
             subscriptionXlm: 12,
             totalXlm: 14,
@@ -90,7 +91,7 @@ describe('FeeRevenueChart component', () => {
 
     render(<FeeRevenueChart />);
     expect(screen.getByText('Fee Revenue')).toBeInTheDocument();
-    expect(screen.getByText(/14(\.00)?\s*XLM/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/14(\.00)?\s*XLM/i).length).toBeGreaterThan(0);
   });
 
   it('renders warning alert banner when fee drift is detected', () => {

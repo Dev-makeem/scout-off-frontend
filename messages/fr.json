@@ -143,6 +143,8 @@
     "ledgerConnect": "Portefeuille matériel — connectez via USB",
     "ledgerInstructions": "Connectez votre appareil Ledger via USB et ouvrez l'application Stellar.",
     "comingSoon": "Bientôt disponible",
+    "rememberDevice": "Se souvenir de cet appareil",
+    "rememberDeviceHint": "Restez connecté sur cet appareil pendant 30 jours sans signer à nouveau.",
     "accountSwitched": "Compte changé avec succès.",
     "accountSwitchFailed": "Échec du changement de compte. Veuillez réessayer.",
     "accountSwitchMismatch": "Votre extension de portefeuille est actuellement sur un compte différent de celui que vous avez sélectionné. Veuillez changer le compte actif dans votre extension de portefeuille, puis réessayer.",

@@ -17,6 +17,7 @@ function event(
     ledger,
     timestamp: 1_700_000_000,
     data: { player_id: `p${ledger}`, ...data },
+    contractVersion: 1,
     eventId: `player_registered:${ledger}`,
   };
 }

@@ -118,6 +118,18 @@ function listAcademiesByOwnerWallet(wallet) {
   return findAcademiesByOwnerWallet.all(wallet).map(toAcademy);
 }
 
+/**
+ * Sets (or, with `null`, clears) an academy's validator quorum — issue
+ * #1185. Throws AcademyNotFoundError for an unknown id.
+ */
+function setAcademyQuorum(academyId, quorum) {
+  const { changes } = updateQuorumStmt.run({ id: academyId, quorum });
+  if (changes === 0) {
+    throw new AcademyNotFoundError(`Academy ${academyId} not found`);
+  }
+  return getAcademy(academyId);
+}
+
 module.exports = {
   AcademyNotFoundError,
   WalletAlreadyAssignedError,
@@ -128,4 +140,5 @@ module.exports = {
   removeMember,
   getAcademyForWallet,
   listAcademiesByOwnerWallet,
+  setAcademyQuorum,
 };

@@ -698,6 +698,23 @@ export function runIncrementalBacktest(
   for (const list of state.activeFlags.values()) {
     flags.push(...list);
   }
+
+  // 3. Validator heuristics have no incremental form; like the scheduled
+  // runner (lib/fraudFlagsRunner.ts) they are a full pass over the approvals,
+  // with referral-co-flagged wallets treated as one cluster.
+  if (!hitTimeBudget) {
+    flags.push(
+      ...analyzeValidatorAbuse(
+        snapshot.validatorApprovals ?? [],
+        {
+          walletClusters: flags
+            .filter((f) => f.category === 'referral')
+            .map((f) => f.wallets),
+        },
+        thresholds,
+      ),
+    );
+  }
   const rank = { high: 0, medium: 1, low: 2 } as const;
   flags.sort((a, b) => rank[a.severity] - rank[b.severity]);
 
@@ -861,18 +878,19 @@ export function benchmarkIncrementalVsFull(
     activityEvents: [...historicalEvents, ...newEvents],
   };
 
-  const startFull = Date.now();
+  // performance.now(): both runs are a few ms, below Date.now() resolution.
+  const startFull = performance.now();
   for (let iter = 0; iter < 5; iter++) {
     runBacktest(fullSnapshot);
   }
-  const fullTimeMs = (Date.now() - startFull) / 5;
+  const fullTimeMs = (performance.now() - startFull) / 5;
 
   // Benchmark incremental evaluation (only processes the new events)
-  const startInc = Date.now();
+  const startInc = performance.now();
   for (let iter = 0; iter < 5; iter++) {
     runIncrementalStep(incrementalState, [], newEvents);
   }
-  const incrementalTimeMs = (Date.now() - startInc) / 5;
+  const incrementalTimeMs = (performance.now() - startInc) / 5;
 
   return {
     fullTimeMs,
@@ -885,4 +903,3 @@ export function benchmarkIncrementalVsFull(
     ),
   };
 }
-

@@ -68,4 +68,3 @@ export async function GET(req: NextRequest) {
     warnings: result.warnings,
   });
 }
-

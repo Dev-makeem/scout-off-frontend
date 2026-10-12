@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { privateJson } from '@/lib/httpResponses';
 import axios from 'axios';
 import { sanitize } from '@/lib/sanitize';
+import { upstreamStatus } from '@/lib/httpClient';
 import {
   detectFileType,
   isDeclaredTypeCompatible,
@@ -52,10 +54,7 @@ async function postIpfsUpload(req: NextRequest) {
     log.error('Pinata credentials missing; IPFS uploads disabled', {
       missing: getMissingPinataEnvVars().join(', '),
     });
-    return NextResponse.json(
-      { error: PINATA_NOT_CONFIGURED_ERROR },
-      { status: 503 },
-    );
+    return privateJson({ error: PINATA_NOT_CONFIGURED_ERROR }, { status: 503 });
   }
   const wallet = getSessionWallet(req);
   const ip = getClientIp(req);
@@ -69,7 +68,7 @@ async function postIpfsUpload(req: NextRequest) {
   if (rl.limited) {
     log.warn('Rate limit exceeded', { ip });
     const retryAfter = rl.retryAfterSec ?? 60;
-    return NextResponse.json(
+    return privateJson(
       { error: 'Too many requests' },
       { status: 429, headers: { 'Retry-After': String(retryAfter) } },
     );
@@ -80,7 +79,7 @@ async function postIpfsUpload(req: NextRequest) {
   try {
     form = await req.formData();
   } catch {
-    return NextResponse.json({ error: 'Invalid form data' }, { status: 400 });
+    return privateJson({ error: 'Invalid form data' }, { status: 400 });
   }
 
   // Server-side sanitization: strip HTML tags from any text fields that may be present
@@ -97,7 +96,7 @@ async function postIpfsUpload(req: NextRequest) {
 
   const file = form.get('file') as File | null;
   if (!file) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    return privateJson({ error: 'No file provided' }, { status: 400 });
   }
 
   // ── 2. Size check (issue #119) ──────────────────────────────────────────────
@@ -107,7 +106,7 @@ async function postIpfsUpload(req: NextRequest) {
       type: file.type,
       ip,
     });
-    return NextResponse.json(
+    return privateJson(
       {
         error: `File exceeds the 100 MB size limit (received ${(file.size / 1024 / 1024).toFixed(1)} MB)`,
       },
@@ -126,7 +125,7 @@ async function postIpfsUpload(req: NextRequest) {
       size: file.size,
       ip,
     });
-    return NextResponse.json(
+    return privateJson(
       {
         error: `File type "${file.type}" is not allowed. Only image/* and video/* files are accepted.`,
       },
@@ -149,7 +148,7 @@ async function postIpfsUpload(req: NextRequest) {
       ip,
       header: bufToHex(headerBuffer),
     });
-    return NextResponse.json(
+    return privateJson(
       {
         error:
           'File content does not match its declared type. Upload rejected.',
@@ -192,7 +191,7 @@ async function postIpfsUpload(req: NextRequest) {
       ip,
       reason: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json(
+    return privateJson(
       { error: 'Failed to upload file to IPFS' },
       { status: upstreamStatus(err) === 504 ? 504 : 502 },
     );
@@ -218,7 +217,7 @@ async function postIpfsUpload(req: NextRequest) {
       cid,
       reason: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json(
+    return privateJson(
       {
         error:
           err instanceof UploadVerificationError
@@ -229,7 +228,7 @@ async function postIpfsUpload(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ cid });
+  return privateJson({ cid });
 }
 
 export const POST = withRouteTelemetry(postIpfsUpload, '/api/ipfs/upload');

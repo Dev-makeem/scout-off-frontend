@@ -42,10 +42,15 @@ describe('logger', () => {
     });
 
     test('supports all log levels', () => {
-      logger.debug('debug message');
-      logger.info('info message');
-      logger.warn('warn message');
-      logger.error('error message');
+      // Debug is filtered at the default (info) level, so opt in to it.
+      process.env.LOG_LEVEL = 'debug';
+      jest.resetModules();
+      const { logger: loggerDebug } = require('../logger');
+
+      loggerDebug.debug('debug message');
+      loggerDebug.info('info message');
+      loggerDebug.warn('warn message');
+      loggerDebug.error('error message');
 
       expect(capturedOutput).toHaveLength(4);
       capturedOutput.forEach((output) => {

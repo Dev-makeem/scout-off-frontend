@@ -11,14 +11,15 @@ import EmptyState from '@/components/ui/EmptyState';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import TruncatedAddress from '@/components/ui/TruncatedAddress';
 import DisputeEvidenceForm from '@/components/player/DisputeEvidenceForm';
-import type { MilestoneDispute, DisputeEvent, DisputeWithEvents } from '@/types';
+import type {
+  MilestoneDispute,
+  DisputeEvent,
+  DisputeWithEvents,
+} from '@/types';
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<
-  string,
-  { label: string; classes: string }
-> = {
+const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
   pending: {
     label: 'Awaiting validator',
     classes: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
@@ -59,25 +60,39 @@ function StatusBadge({ status }: { status: string }) {
 
 function eventIcon(type: DisputeEvent['type']): string {
   switch (type) {
-    case 'opened':            return '📋';
-    case 'evidence_added':    return '📎';
-    case 'validator_response': return '🛡️';
-    case 'admin_note':        return '📝';
-    case 'decided':           return '⚖️';
-    case 'escalated':         return '🚨';
-    default:                  return '•';
+    case 'opened':
+      return '📋';
+    case 'evidence_added':
+      return '📎';
+    case 'validator_response':
+      return '🛡️';
+    case 'admin_note':
+      return '📝';
+    case 'decided':
+      return '⚖️';
+    case 'escalated':
+      return '🚨';
+    default:
+      return '•';
   }
 }
 
 function eventLabel(type: DisputeEvent['type']): string {
   switch (type) {
-    case 'opened':            return 'Dispute filed';
-    case 'evidence_added':    return 'Evidence added';
-    case 'validator_response': return 'Validator response';
-    case 'admin_note':        return 'Admin note';
-    case 'decided':           return 'Decision recorded';
-    case 'escalated':         return 'Escalated (no response)';
-    default:                  return type;
+    case 'opened':
+      return 'Dispute filed';
+    case 'evidence_added':
+      return 'Evidence added';
+    case 'validator_response':
+      return 'Validator response';
+    case 'admin_note':
+      return 'Admin note';
+    case 'decided':
+      return 'Decision recorded';
+    case 'escalated':
+      return 'Escalated (no response)';
+    default:
+      return type;
   }
 }
 
@@ -131,9 +146,7 @@ function EvidenceThumbnail({
 
 function DisputeTimeline({ events }: { events: DisputeEvent[] }) {
   if (events.length === 0) {
-    return (
-      <p className="text-xs text-gray-500 italic">No events yet.</p>
-    );
+    return <p className="text-xs text-gray-500 italic">No events yet.</p>;
   }
   return (
     <ol className="relative border-l border-gray-700 pl-4 flex flex-col gap-4">
@@ -149,12 +162,18 @@ function DisputeTimeline({ events }: { events: DisputeEvent[] }) {
               {eventLabel(ev.type)}
             </span>
             <span className="text-gray-500">·</span>
-            <TruncatedAddress address={ev.actorWallet} className="text-gray-500" />
+            <TruncatedAddress
+              address={ev.actorWallet}
+              className="text-gray-500"
+            />
             <span className="text-gray-500">·</span>
             <time className="text-gray-600">
               {new Date(ev.createdAt).toLocaleString(undefined, {
-                year: 'numeric', month: 'short', day: 'numeric',
-                hour: '2-digit', minute: '2-digit',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
               })}
             </time>
           </div>
@@ -341,9 +360,11 @@ function DisputeCard({
   ) => Promise<MilestoneDispute>;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const { dispute, loading: detailLoading, refetch } = useDisputeDetail(
-    expanded ? summary.id : null,
-  );
+  const {
+    dispute,
+    loading: detailLoading,
+    refetch,
+  } = useDisputeDetail(expanded ? summary.id : null);
 
   const isPending =
     summary.status === 'pending' ||
@@ -370,7 +391,9 @@ function DisputeCard({
             <span>·</span>
             <time>
               {new Date(summary.createdAt).toLocaleDateString(undefined, {
-                year: 'numeric', month: 'short', day: 'numeric',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
               })}
             </time>
             {summary.status === 'pending' && (
@@ -451,7 +474,9 @@ function DisputeCard({
                 Decided{' '}
                 <time>
                   {new Date(summary.decidedAt).toLocaleDateString(undefined, {
-                    year: 'numeric', month: 'short', day: 'numeric',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
                   })}
                 </time>{' '}
                 by <TruncatedAddress address={summary.decidedBy ?? ''} />
@@ -548,11 +573,7 @@ export default function DisputedMilestonesPanel() {
       ) : (
         <ul className="flex flex-col gap-2">
           {disputes.map((dispute) => (
-            <DisputeCard
-              key={dispute.id}
-              dispute={dispute}
-              onDecide={decide}
-            />
+            <DisputeCard key={dispute.id} dispute={dispute} onDecide={decide} />
           ))}
         </ul>
       )}

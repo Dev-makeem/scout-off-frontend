@@ -289,7 +289,9 @@ describe('VideoUpload component', () => {
 
     renderUpload();
 
-    expect(screen.getByText(/processing/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/processing/i, { selector: 'span' }),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/uploading\.\.\./i)).not.toBeInTheDocument();
     const bar = screen.getByRole('progressbar', { name: /processing upload/i });
     expect(bar).not.toHaveAttribute('aria-valuenow');

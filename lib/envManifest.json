@@ -701,6 +701,50 @@
       "requiredIn": [],
       "usedBy": ["lib/clientIp.ts"],
       "description": "Optional. See .env.example and lib/clientIp.ts."
+    },
+    {
+      "name": "BACKEND_SERVICE_TOKEN",
+      "requiredIn": [],
+      "secret": true,
+      "usedBy": ["lib/backendUserData.ts", "server/src/routes/users.js"],
+      "description": "Shared secret the Next server sends to the Express backend /users/me export and deletion endpoints. Set the same value in the backend environment. Server-only."
+    },
+    {
+      "name": "NEXT_PUBLIC_USDC_ISSUER",
+      "requiredIn": [],
+      "secret": false,
+      "usedBy": ["lib/pathPayment.ts"],
+      "description": "Issuer of the USDC asset scouts can pay contact fees with (path payment to XLM). Defaults to Circle USDC issuer for NEXT_PUBLIC_NETWORK."
+    },
+    {
+      "name": "MEDIA_MODERATION_DB_PATH",
+      "requiredIn": [],
+      "secret": false,
+      "usedBy": ["lib/mediaModerationStore.ts"],
+      "description": "SQLite file for media reports and the CID denylist. Defaults to ./data/media-moderation.db (:memory: under NODE_ENV=test)."
+    },
+    {
+      "name": "INDEXER_DATABASE_URL",
+      "requiredIn": [],
+      "secret": true,
+      "usedBy": ["packages/indexer/src/db/index.ts"],
+      "description": "Postgres connection string for multi-replica indexer deployments. Leave blank for the single-replica SQLite setup."
+    },
+    {
+      "name": "INDEXER_LEADER_LOCK_KEY",
+      "requiredIn": [],
+      "secret": false,
+      "usedBy": ["packages/indexer/src/server.ts"],
+      "description": "Advisory-lock key for indexer leader election. Only change it to run several independent indexers against the same database. Defaults to 7319001."
+    },
+    {
+      "name": "INDEXER_TEST_DATABASE_URL",
+      "requiredIn": [],
+      "secret": true,
+      "usedBy": [
+        "packages/indexer/src/__tests__/replicas.pg.integration.test.ts"
+      ],
+      "description": "Disposable Postgres used only by the indexer replica integration test. The test is skipped when blank."
     }
   ]
 }

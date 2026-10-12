@@ -118,10 +118,7 @@ export default function VideoUpload({
       return;
     }
     const milestone = progress >= 100 ? 100 : Math.floor(progress / 10) * 10;
-    if (
-      milestone > 0 &&
-      milestone !== lastAnnouncedProgressRef.current
-    ) {
+    if (milestone > 0 && milestone !== lastAnnouncedProgressRef.current) {
       lastAnnouncedProgressRef.current = milestone;
       setProgressAnnouncement(`Upload progress: ${milestone} percent.`);
     }

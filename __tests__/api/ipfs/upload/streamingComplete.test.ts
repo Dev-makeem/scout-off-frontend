@@ -16,6 +16,11 @@ import {
   UploadVerificationError,
 } from '@/lib/uploadVerification';
 
+// /complete fails fast with 503 when Pinata isn't configured (#1441); these
+// specs exercise what happens after that check.
+process.env.PINATA_API_KEY ??= 'test-api-key';
+process.env.PINATA_SECRET ??= 'test-secret';
+
 function completeRequest(sid: string, ip: string): NextRequest {
   return new NextRequest('http://localhost:3000/api/ipfs/upload/complete', {
     method: 'POST',

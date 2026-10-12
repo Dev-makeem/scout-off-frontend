@@ -77,6 +77,8 @@ describe('POST /api/data-deletion/request', () => {
     MilestoneDisputeStore.getInstance().create({
       playerId: 'player-1',
       playerWallet: WALLET,
+      validatorWallet:
+        'GVALIDATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       milestoneId: 'm-1',
       milestoneDescription: 'desc',
       reason: 'reason',

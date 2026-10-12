@@ -3,13 +3,15 @@ jest.mock('@/lib/featureFlags', () => ({
   isFeatureEnabled: jest.fn(),
 }));
 
+import { Keypair } from '@stellar/stellar-sdk';
 import { GET } from '@/app/api/fraud/throttle-status/route';
 import { NextRequest } from 'next/server';
 import { isFeatureEnabled } from '@/lib/featureFlags';
 import { FraudThrottleStore } from '@/lib/fraudThrottleStore';
 
-const WALLET = 'GTHROTTLED00000000000000000000000000000000000000000000';
-const OTHER = 'GCLEAN000000000000000000000000000000000000000000000000';
+// The route rejects anything that isn't a valid Stellar address.
+const WALLET = Keypair.random().publicKey();
+const OTHER = Keypair.random().publicKey();
 
 const mockIsFeatureEnabled = isFeatureEnabled as jest.Mock;
 

@@ -1,7 +1,4 @@
-import {
-  buildCvContent,
-  canonicalizeCvContent,
-} from '@/lib/cvVerification';
+import { buildCvContent, canonicalizeCvContent } from '@/lib/cvVerification';
 import type { Player } from '@/types';
 
 const PLAYER: Player = {

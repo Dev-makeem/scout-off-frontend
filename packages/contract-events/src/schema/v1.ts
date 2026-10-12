@@ -4,6 +4,7 @@ export const CONTRACT_VERSION = 1 as const;
 
 export type EventType =
   | 'player_registered'
+  | 'profile_updated'
   | 'milestone_approved'
   | 'milestone_revoked'
   | 'scout_subscribed'
@@ -38,8 +39,12 @@ function define(topic: EventType): EventDefinition {
 }
 
 /** The v1 contract event topics and their payload decoders. */
-export const EVENT_SCHEMA_V1: Record<Exclude<EventType, 'unknown'>, EventDefinition> = {
+export const EVENT_SCHEMA_V1: Record<
+  Exclude<EventType, 'unknown'>,
+  EventDefinition
+> = {
   player_registered: define('player_registered'),
+  profile_updated: define('profile_updated'),
   milestone_approved: define('milestone_approved'),
   milestone_revoked: define('milestone_revoked'),
   scout_subscribed: define('scout_subscribed'),
@@ -88,6 +93,7 @@ export function decodeV1SorobanEvent(
 
 const HORIZON_FUNCTIONS: Record<string, Exclude<EventType, 'unknown'>> = {
   register_player: 'player_registered',
+  update_profile: 'profile_updated',
   approve_milestone: 'milestone_approved',
   revoke_milestone: 'milestone_revoked',
   subscribe: 'scout_subscribed',

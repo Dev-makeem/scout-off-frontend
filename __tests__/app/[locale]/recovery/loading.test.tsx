@@ -25,9 +25,9 @@ describe('RecoveryLoading', () => {
     expect(title).toBeInTheDocument();
 
     // Intro card and input section
-    const sections = screen.getAllByRole('generic').filter(
-      (el) => el.tagName === 'SECTION'
-    );
+    const sections = screen
+      .getAllByRole('generic')
+      .filter((el) => el.tagName === 'SECTION');
     expect(sections.length).toBeGreaterThanOrEqual(2);
   });
 });

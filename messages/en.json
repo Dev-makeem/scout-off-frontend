@@ -126,6 +126,8 @@
     "ledgerConnect": "Hardware wallet — connect via USB",
     "ledgerInstructions": "Connect your Ledger device via USB and open the Stellar app.",
     "comingSoon": "Coming soon",
+    "rememberDevice": "Remember this device",
+    "rememberDeviceHint": "Stay signed in on this device for 30 days without re-signing.",
     "accountSwitched": "Account switched successfully.",
     "accountSwitchFailed": "Failed to switch account. Please try again.",
     "accountSwitchMismatch": "Your wallet extension is currently on a different account than the one you selected. Please switch the active account inside your wallet extension, then try again.",

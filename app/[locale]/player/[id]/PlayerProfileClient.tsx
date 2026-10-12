@@ -397,7 +397,7 @@ export default function PlayerProfileClient({
           <button
             onClick={() => setConfirmOpen(true)}
             disabled={contacting}
-            aria-label={`Pay ${displayFee} XLM to contact ${player.vitals.name}`}
+            aria-label={`Pay to Contact ${player.vitals.name} (${displayFee} XLM)`}
             className="bg-brand-green text-black font-semibold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-50"
           >
             {contacting ? (

@@ -2,18 +2,10 @@ jest.unmock('next-intl');
 
 import React from 'react';
 import { render, screen } from '@/__tests__/setup-providers-intl';
+import { fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import DisputeMilestoneModal from '@/components/player/DisputeMilestoneModal';
-
-jest.mock('next-intl', () => ({
-  useTranslations: () => (key: string, params?: { count: number; max: number }) => {
-    if (key === 'character_count' && params) {
-      return `${params.count} of ${params.max} characters`;
-    }
-    return key;
-  },
-}));
 
 describe('DisputeMilestoneModal', () => {
   it('renders nothing when closed', () => {
@@ -143,7 +135,7 @@ describe('DisputeMilestoneModal', () => {
       const textarea = screen.getByLabelText('Reason');
       await user.type(textarea, 'test');
 
-      expect(screen.getByText('5 of 2000 characters')).toBeInTheDocument();
+      expect(screen.getByText('4 of 2000 characters')).toBeInTheDocument();
     });
 
     it('sets aria-live="polite" when within 10% of the limit', async () => {
@@ -164,7 +156,9 @@ describe('DisputeMilestoneModal', () => {
       expect(counter).not.toHaveAttribute('aria-live');
 
       // Type 1800 characters (90% of 2000)
-      await user.type(textarea, 'a'.repeat(1800));
+      // Set the bulk of the value directly: 1800 keystrokes time out under
+      // coverage instrumentation.
+      fireEvent.change(textarea, { target: { value: 'a'.repeat(1800) } });
 
       expect(counter).toHaveAttribute('aria-live', 'polite');
     });
@@ -181,7 +175,10 @@ describe('DisputeMilestoneModal', () => {
       );
 
       const textarea = screen.getByLabelText('Reason');
-      await user.type(textarea, 'a'.repeat(2500));
+      // Pre-fill to just under the limit, then type past it: maxLength is
+      // enforced on keystrokes, not on programmatic value changes.
+      fireEvent.change(textarea, { target: { value: 'a'.repeat(1998) } });
+      await user.type(textarea, 'aaaaa');
 
       // Textarea should not exceed maxLength due to browser enforcement
       expect(textarea).toHaveValue('a'.repeat(2000));

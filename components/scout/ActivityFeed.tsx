@@ -26,6 +26,7 @@ function timeAgo(ms: number) {
 
 const ICONS: Record<EventType, JSX.Element> = {
   player_registered: <span>👤</span>,
+  profile_updated: <span>✏️</span>,
   milestone_approved: <span>🏆</span>,
   milestone_revoked: <span>⚠️</span>,
   scout_subscribed: <span>⭐</span>,
@@ -40,6 +41,10 @@ function renderDescription(ev: FeedEvent) {
     case 'player_registered': {
       const name = ev.payload?.playerName || ev.payload?.playerId || 'Player';
       return <>{name} registered</>;
+    }
+    case 'profile_updated': {
+      const name = ev.payload?.playerName || ev.payload?.playerId || 'Player';
+      return <>{name} updated their profile</>;
     }
     case 'milestone_approved': {
       const who = ev.payload?.scoutName || ev.payload?.scoutId || 'A scout';

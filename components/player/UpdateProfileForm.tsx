@@ -164,7 +164,9 @@ export default function UpdateProfileForm({
             type="submit"
             disabled={!canSubmit || isUploadInProgress}
             isLoading={isSubmitting}
-            disabledReason={isPaused ? tContractStatus('paused_hint') : undefined}
+            disabledReason={
+              isPaused ? tContractStatus('paused_hint') : undefined
+            }
             className="w-full"
           >
             Update Profile

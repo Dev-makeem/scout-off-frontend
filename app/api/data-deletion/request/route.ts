@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         anonymized,
         failed,
       });
-      return NextResponse.json(
+      return privateJson(
         {
           error: `Some of your data could not be deleted (${failedStores.join(', ')}). Please try again.`,
           partial: true,

@@ -505,9 +505,12 @@ describe('startEventPolling', () => {
     );
     let releaseBatch!: () => void;
     const batchGate = new Promise<void>((resolve) => (releaseBatch = resolve));
+    let fetchStarted!: () => void;
+    const inFlight = new Promise<void>((resolve) => (fetchStarted = resolve));
     const rpc: jest.Mocked<RpcClient> = {
       getLatestLedger: jest.fn().mockResolvedValue({ sequence: 1002 }),
       getEvents: jest.fn().mockImplementation(async () => {
+        fetchStarted();
         await batchGate;
         return { latestLedger: 1002, events };
       }),
@@ -522,6 +525,7 @@ describe('startEventPolling', () => {
     );
 
     // SIGTERM arrives mid-poll: stop() must not resolve before the batch.
+    await inFlight;
     let stopped = false;
     const stopping = handle.stop().then(() => (stopped = true));
     await Promise.resolve();

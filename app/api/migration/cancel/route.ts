@@ -9,7 +9,8 @@
  *
  * Body: { requestId: string }
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { privateJson } from '@/lib/httpResponses';
 import { getSessionWallet } from '@/lib/session';
 import { MigrationStore } from '@/lib/migrationStore';
 import { createRequestLogger } from '@/lib/logger';
@@ -21,29 +22,26 @@ export async function POST(req: NextRequest) {
 
   const wallet = getSessionWallet(req);
   if (!wallet) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return privateJson({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
   const { requestId } = (body ?? {}) as Record<string, unknown>;
   if (typeof requestId !== 'string' || !requestId.trim()) {
-    return NextResponse.json(
-      { error: 'requestId is required' },
-      { status: 400 },
-    );
+    return privateJson({ error: 'requestId is required' }, { status: 400 });
   }
 
   const store = MigrationStore.getInstance();
   const migReq = store.get(requestId.trim());
 
   if (!migReq) {
-    return NextResponse.json(
+    return privateJson(
       { error: 'Migration request not found' },
       { status: 404 },
     );
@@ -51,7 +49,7 @@ export async function POST(req: NextRequest) {
 
   // Only the fromWallet or toWallet may cancel
   if (migReq.fromWallet !== wallet && migReq.toWallet !== wallet) {
-    return NextResponse.json(
+    return privateJson(
       { error: 'Forbidden: you are not a party to this migration request' },
       { status: 403 },
     );
@@ -63,9 +61,9 @@ export async function POST(req: NextRequest) {
       id: updated.id,
       cancelledBy: wallet,
     });
-    return NextResponse.json(updated);
+    return privateJson(updated);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message }, { status: 409 });
+    return privateJson({ error: message }, { status: 409 });
   }
 }

@@ -13,7 +13,8 @@
  *
  * Every decision is written to the admin audit log.
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { privateJson } from '@/lib/httpResponses';
 import { requireAdminWallet } from '@/lib/adminAuth';
 import { AdminAuditStore } from '@/lib/adminAuditStore';
 import type { AdminAuditActionType } from '@/lib/adminAudit';
@@ -30,10 +31,10 @@ const ACTION_BY_DECISION: Record<string, AdminAuditActionType> = {
 
 export async function GET(req: NextRequest) {
   if (!requireAdminWallet(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
   const store = MediaModerationStore.getInstance();
-  return NextResponse.json(
+  return privateJson(
     { queue: store.getQueue(), denylist: store.getDenylist() },
     { headers: { 'Cache-Control': 'no-store' } },
   );
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const adminWallet = requireAdminWallet(req);
   if (!adminWallet) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
   const log = createRequestLogger(req);
 
@@ -57,13 +58,13 @@ export async function POST(req: NextRequest) {
     typeof body?.playerId === 'string' ? (body.playerId as string) : null;
 
   if (!isValidMediaCid(cid)) {
-    return NextResponse.json({ error: 'Invalid cid' }, { status: 400 });
+    return privateJson({ error: 'Invalid cid' }, { status: 400 });
   }
   if (typeof decision !== 'string' || !(decision in ACTION_BY_DECISION)) {
-    return NextResponse.json({ error: 'Invalid decision' }, { status: 400 });
+    return privateJson({ error: 'Invalid decision' }, { status: 400 });
   }
   if (decision === 'deny' && !reason) {
-    return NextResponse.json(
+    return privateJson(
       { error: 'A reason is required to deny media' },
       { status: 400 },
     );
@@ -75,10 +76,7 @@ export async function POST(req: NextRequest) {
 
   if (decision === 'reinstate') {
     if (!store.reinstate(cid)) {
-      return NextResponse.json(
-        { error: 'CID is not denylisted' },
-        { status: 404 },
-      );
+      return privateJson({ error: 'CID is not denylisted' }, { status: 404 });
     }
   } else {
     resolvedReports = store.decide(
@@ -108,5 +106,5 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  return NextResponse.json({ ok: true, resolvedReports, unpinQueued });
+  return privateJson({ ok: true, resolvedReports, unpinQueued });
 }

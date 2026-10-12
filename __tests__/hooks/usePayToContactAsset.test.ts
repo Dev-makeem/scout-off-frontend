@@ -38,6 +38,14 @@ jest.mock('@/lib/contactDetailsCache', () => ({
   contactDetailsKey: (p: string, w: string) => `contact:${p}:${w}`,
   purgeContactDetails: jest.fn(),
 }));
+// The release endpoint returns the off-chain contact details after payment.
+jest.mock('@/lib/contactReleaseClient', () => ({
+  defaultFetchContactRelease: () =>
+    Promise.resolve({
+      status: 200,
+      details: { email: 'player@example.com' },
+    }),
+}));
 jest.mock('@/lib/contractErrorMessage', () => ({
   parseContractError: (e: unknown) =>
     e instanceof Error ? e.message : String(e),

@@ -37,10 +37,7 @@ export async function POST(req: NextRequest) {
     log.error('Pinata credentials missing; IPFS uploads disabled', {
       missing: getMissingPinataEnvVars().join(', '),
     });
-    return privateJson(
-      { error: PINATA_NOT_CONFIGURED_ERROR },
-      { status: 503 },
-    );
+    return privateJson({ error: PINATA_NOT_CONFIGURED_ERROR }, { status: 503 });
   }
   const wallet = getSessionWallet(req);
   const ip = getClientIp(req);

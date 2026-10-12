@@ -34,7 +34,9 @@ export default function Button({
       'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600',
   };
 
-  const hintId = disabledReason ? `button-hint-${Math.random().toString(36).substr(2, 9)}` : undefined;
+  const hintId = disabledReason
+    ? `button-hint-${Math.random().toString(36).substr(2, 9)}`
+    : undefined;
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (isDisabledByReason) {

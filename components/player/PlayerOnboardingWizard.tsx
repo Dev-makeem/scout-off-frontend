@@ -926,7 +926,9 @@ export default function PlayerOnboardingWizard({
               onClick={handleSubmit}
               isLoading={isLoading}
               disabled={isLoading}
-              disabledReason={isPaused ? tContractStatus('paused_hint') : undefined}
+              disabledReason={
+                isPaused ? tContractStatus('paused_hint') : undefined
+              }
               className="flex-1"
             >
               {isLoading ? 'Registering...' : 'Register as Player'}

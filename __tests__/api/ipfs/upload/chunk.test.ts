@@ -111,7 +111,12 @@ describe('POST /api/ipfs/upload/chunk', () => {
 
     const res = await POST(makeRequest(form, 'ip-outofrange'));
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: 'Chunk index out of range' });
+    expect(await res.json()).toEqual({
+      error: {
+        code: 'CHUNK_INDEX_OUT_OF_RANGE',
+        message: 'Chunk index out of range',
+      },
+    });
   });
 
   it('returns 500 with a generic message for unexpected errors', async () => {
@@ -119,8 +124,15 @@ describe('POST /api/ipfs/upload/chunk', () => {
       new Error('disk full at /tmp/secret'),
     );
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    // A real session, so the ownership check passes and writeChunk runs.
+    const { sessionId } = await initSession({
+      filename: 'clip.mp4',
+      fileType: 'video/mp4',
+      fileSize: 1,
+      totalChunks: 1,
+    });
     const form = new FormData();
-    form.set('sessionId', 'any');
+    form.set('sessionId', sessionId);
     form.set('chunkIndex', '0');
     form.set('chunk', new Blob([new Uint8Array(1)]));
 

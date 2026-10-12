@@ -262,17 +262,15 @@ export default function FraudFlagsPanel({
     setLoading(true);
     setError(false);
     fetchFraudFlags()
-      .then(
-        ({ flags, warnings, evaluatedAt, eventsProcessed, durationMs }) => {
-          if (cancelled) return;
-          setFlags(flags);
-          setWarnings(warnings);
-          setEvaluatedAt(evaluatedAt);
-          if (eventsProcessed !== undefined || durationMs !== undefined) {
-            setRunStats({ eventsProcessed, durationMs });
-          }
-        },
-      )
+      .then(({ flags, warnings, evaluatedAt, eventsProcessed, durationMs }) => {
+        if (cancelled) return;
+        setFlags(flags);
+        setWarnings(warnings);
+        setEvaluatedAt(evaluatedAt);
+        if (eventsProcessed !== undefined || durationMs !== undefined) {
+          setRunStats({ eventsProcessed, durationMs });
+        }
+      })
       .catch(() => {
         if (!cancelled) setError(true);
       })

@@ -159,11 +159,11 @@ export async function POST(req: NextRequest) {
     const milestone = history?.find((m) => String(m.id) === trimmedMilestoneId);
 
     if (!milestone) {
-      return privateJson(
-        {
-          error: `Milestone ${trimmedMilestoneId} not found for this player`,
-        },
-        { status: 404 },
+      return apiError(
+        ApiErrorCode.MILESTONE_NOT_FOUND,
+        404,
+        `Milestone ${trimmedMilestoneId} not found`,
+        { milestoneId: trimmedMilestoneId },
       );
     }
 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { requireAdminWallet } from '@/lib/adminAuth';
 import { getSessionWallet } from '@/lib/session';
 import { privateJson } from '@/lib/httpResponses';
@@ -9,8 +9,8 @@ import { ENV_MANIFEST, isRequiredInProduction } from '@/lib/envManifest';
 export async function GET(req: NextRequest) {
   if (!requireAdminWallet(req)) {
     return getSessionWallet(req)
-      ? NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      : NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      ? privateJson({ error: 'Forbidden' }, { status: 403 })
+      : privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const result = ENV_MANIFEST.map((v) => {

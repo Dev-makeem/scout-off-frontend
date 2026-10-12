@@ -16,14 +16,37 @@ jest.mock('@/hooks/useDisputeQueue', () => ({
   useDisputeQueue: jest.fn(),
 }));
 
+// Expanding a card loads its evidence timeline; these tests only exercise
+// the claim and the decision actions, so the timeline stays empty.
+jest.mock('@/hooks/useDisputeDetail', () => ({
+  useDisputeDetail: () => ({
+    dispute: null,
+    loading: false,
+    refetch: jest.fn(),
+  }),
+}));
+
+/** Cards render collapsed; open the one whose header matches `name`. */
+async function expandCard(
+  user: ReturnType<typeof userEvent.setup>,
+  name: RegExp | string = /KYC verified/,
+) {
+  await user.click(screen.getByRole('button', { expanded: false, name }));
+}
+
 jest.mock('@/lib/contract', () => ({
   buildRevokeMilestone: jest.fn(),
 }));
 
-jest.mock('swr', () => ({
-  ...jest.requireActual('swr'),
-  mutate: jest.fn(),
-}));
+jest.mock('swr', () => {
+  const actual = jest.requireActual('swr');
+  return {
+    __esModule: true,
+    ...actual,
+    default: actual.default,
+    mutate: jest.fn(),
+  };
+});
 
 const mockUseWallet = useWallet as jest.Mock;
 const mockUseDisputeQueue = useDisputeQueue as jest.Mock;
@@ -69,7 +92,7 @@ describe('DisputedMilestonesPanel', () => {
     expect(screen.getByText('No disputed milestones')).toBeInTheDocument();
   });
 
-  it('renders a card per pending dispute with the reason and milestone description', () => {
+  it('renders a card per pending dispute with the reason and milestone description', async () => {
     mockUseDisputeQueue.mockReturnValue({
       disputes: [makeDispute({})],
       loading: false,
@@ -77,9 +100,11 @@ describe('DisputedMilestonesPanel', () => {
       decide: jest.fn(),
     });
 
+    const user = userEvent.setup({ delay: null });
     render(<DisputedMilestonesPanel />);
 
     expect(screen.getByText('KYC verified')).toBeInTheDocument();
+    await expandCard(user);
     expect(
       screen.getByText('This was rejected without an explanation.'),
     ).toBeInTheDocument();
@@ -98,6 +123,7 @@ describe('DisputedMilestonesPanel', () => {
     const user = userEvent.setup({ delay: null });
 
     render(<DisputedMilestonesPanel />);
+    await expandCard(user);
     await user.click(screen.getByRole('button', { name: 'Uphold decision' }));
     await user.click(screen.getByRole('button', { name: 'Uphold' }));
 
@@ -124,6 +150,7 @@ describe('DisputedMilestonesPanel', () => {
     const user = userEvent.setup({ delay: null });
 
     render(<DisputedMilestonesPanel />);
+    await expandCard(user);
     await user.click(
       screen.getByRole('button', { name: /Reverse & revoke milestone/i }),
     );

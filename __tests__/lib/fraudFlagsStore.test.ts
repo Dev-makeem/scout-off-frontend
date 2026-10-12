@@ -127,21 +127,33 @@ describe('FraudFlagsStore', () => {
       const agg1 = {
         wallet: 'GWALLET_A',
         referral: { selfRedemptions: [], scoutCodes: {}, redeemedCodes: {} },
-        payToContact: { contactTimestamps: [100], subscriptionTimestamps: [], contactsPerHour: {} },
+        payToContact: {
+          contactTimestamps: [100],
+          subscriptionTimestamps: [],
+          contactsPerHour: {},
+        },
         updatedAt: 1_000,
       };
       const agg2 = {
         wallet: 'GWALLET_B',
         referral: { selfRedemptions: [], scoutCodes: {}, redeemedCodes: {} },
-        payToContact: { contactTimestamps: [200], subscriptionTimestamps: [], contactsPerHour: {} },
+        payToContact: {
+          contactTimestamps: [200],
+          subscriptionTimestamps: [],
+          contactsPerHour: {},
+        },
         updatedAt: 2_000,
       };
 
       store.saveWalletAggregates([agg1, agg2]);
       const all = store.getAllWalletAggregates();
       expect(all.size).toBe(2);
-      expect(all.get('GWALLET_A')?.payToContact.contactTimestamps).toEqual([100]);
-      expect(all.get('GWALLET_B')?.payToContact.contactTimestamps).toEqual([200]);
+      expect(all.get('GWALLET_A')?.payToContact.contactTimestamps).toEqual([
+        100,
+      ]);
+      expect(all.get('GWALLET_B')?.payToContact.contactTimestamps).toEqual([
+        200,
+      ]);
     });
   });
 
@@ -170,4 +182,3 @@ describe('FraudFlagsStore', () => {
     });
   });
 });
-

@@ -43,6 +43,7 @@ function makeDecoded(overrides: Partial<DecodedEvent> = {}): DecodedEvent {
     ledger: 100,
     timestamp: 1_700_000_000,
     data: { player_id: 'player-1', milestone_id: 'm1', validator: 'GVAL' },
+    contractVersion: 1,
     eventId: `test-event-${eventIdSeq}`,
     ...overrides,
   };
@@ -413,6 +414,7 @@ describe('GET /players', () => {
     const store = EventStore.getInstance();
     store.insertEvent({
       type: 'player_registered',
+      contractVersion: 1,
       ledger,
       timestamp,
       data: {
@@ -433,6 +435,7 @@ describe('GET /players', () => {
       seq += 1;
       store.insertEvent({
         type: 'milestone_approved',
+        contractVersion: 1,
         ledger: ledger + 1,
         timestamp: 1_700_000_000 + seq,
         data: {

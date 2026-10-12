@@ -112,6 +112,12 @@ export const EXEMPT_STORES: Record<string, string> = {
     'Admin audit-log reconciliation results; not wallet-keyed.',
   referralStore:
     'Referral codes are auto-pruned by the retention policy documented in lib/referralStore.ts.',
+  mediaModerationStore:
+    'Reports are keyed by CID with a hashed, non-reversible reporter identity; not wallet-keyed.',
+  contactVaultStore:
+    'Sealed (encrypted) contact blobs keyed by player id. Not yet covered by export/deletion — needs a follow-up to delete by owner wallet.',
+  migrationStore:
+    'Wallet-migration requests (fromWallet/toWallet). Not yet covered by export/deletion — needs a follow-up.',
 };
 // Redis rate-limit keys (lib/rateLimit.ts) are ephemeral, TTL-bound counters
 // and are intentionally not exported or deleted.
@@ -150,6 +156,11 @@ export interface CollectedUserData {
     sessions: SessionRow[];
     milestoneEndorsements: MilestoneEndorsement[];
     trackedUploads: TrackedUpload[];
+    /**
+     * Express backend records; absent when that service isn't configured,
+     * null when fetching them failed (see the collectionErrors exclusion).
+     */
+    backend?: BackendUserData | null;
   };
   /**
    * On-chain data is explicitly NOT part of this export (it is immutable and
@@ -263,6 +274,7 @@ export async function collectUserData(
     try {
       sections.backend = await fetchBackendUserData(wallet);
     } catch (err) {
+      sections.backend = null;
       errors.push(
         `backend: ${err instanceof Error ? err.message : String(err)}`,
       );

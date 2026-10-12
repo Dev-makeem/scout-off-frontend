@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getPinataCredentials } from './pinataConfig';
+import { BACKEND_WRITE_TIMEOUT_MS } from './httpClient';
 
 /**
  * Best-effort unpin of a CID from Pinata (issue #1005's cleanup path).

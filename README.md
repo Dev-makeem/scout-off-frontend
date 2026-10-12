@@ -416,29 +416,29 @@ Test coverage targets:
 
 ## Implementation Status
 
-| Area                 | Status      | Notes                                                                                                                                                                  |
-| -------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------- | ----------- | ---------------------------------------------------------------------------------------- |
-| Config & tooling     | ✅ Complete | package.json, tsconfig, tailwind, CI, Husky, lint-staged                                                                                                               |
-| Types                | ✅ Complete | Player, Scout, Milestone, ValidatorInfo, Subscription, Contact                                                                                                         |
-| Lib layer            | ✅ Complete | stellar, contract, ipfs, api, sanitize, regions, positions                                                                                                             |
-| Wallet context       | ✅ Complete | Freighter / Albedo / LOBSTR, SEP-10, balance, session restore                                                                                                          |
-| Shared components    | ✅ Complete | Navbar, WalletButton, ProgressBar, PlayerCard, Skeleton                                                                                                                |
-| UI primitives        | ✅ Complete | Modal, Toast, Badge, Button, Spinner, Select, Tooltip, ErrorBoundary                                                                                                   |
-| Player components    | ✅ Complete | PlayerProfileForm, UpdateProfileForm, MilestoneTimeline, IPFSMediaGallery                                                                                              |
-| Player dashboard     | ✅ Complete | Register + milestone history                                                                                                                                           |
-| Player profile page  | ✅ Complete | Public view + pay-to-contact                                                                                                                                           |
-| Scout dashboard      | ✅ Complete | Filter form + wallet search + paginated player grid                                                                                                                    |
-| Scout subscription   | ✅ Complete | Tier selection + XLM payment via `useSubscription`                                                                                                                     |
-| Validator components | ✅ Complete | ApproveForm, RevokeForm, ValidatorPlayerSearch                                                                                                                         |     | Validator dashboard | ✅ Complete | ValidatorPlayerSearch + ApproveForm + RevokeForm + ApprovedPlayersRoster wired with i18n |
-| Admin panel          | ✅ Complete | Add/remove validators, withdraw fees, pause/unpause                                                                                                                    |
+| Area                 | Status      | Notes                                                                                                                                                   |
+| -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| Config & tooling     | ✅ Complete | package.json, tsconfig, tailwind, CI, Husky, lint-staged                                                                                                |
+| Types                | ✅ Complete | Player, Scout, Milestone, ValidatorInfo, Subscription, Contact                                                                                          |
+| Lib layer            | ✅ Complete | stellar, contract, ipfs, api, sanitize, regions, positions                                                                                              |
+| Wallet context       | ✅ Complete | Freighter / Albedo / LOBSTR, SEP-10, balance, session restore                                                                                           |
+| Shared components    | ✅ Complete | Navbar, WalletButton, ProgressBar, PlayerCard, Skeleton                                                                                                 |
+| UI primitives        | ✅ Complete | Modal, Toast, Badge, Button, Spinner, Select, Tooltip, ErrorBoundary                                                                                    |
+| Player components    | ✅ Complete | PlayerProfileForm, UpdateProfileForm, MilestoneTimeline, IPFSMediaGallery                                                                               |
+| Player dashboard     | ✅ Complete | Register + milestone history                                                                                                                            |
+| Player profile page  | ✅ Complete | Public view + pay-to-contact                                                                                                                            |
+| Scout dashboard      | ✅ Complete | Filter form + wallet search + paginated player grid                                                                                                     |
+| Scout subscription   | ✅ Complete | Tier selection + XLM payment via `useSubscription`                                                                                                      |
+| Validator components | ✅ Complete | ApproveForm, RevokeForm, ValidatorPlayerSearch                                                                                                          |     | Validator dashboard | ✅ Complete | ValidatorPlayerSearch + ApproveForm + RevokeForm + ApprovedPlayersRoster wired with i18n |
+| Admin panel          | ✅ Complete | Add/remove validators, withdraw fees, pause/unpause                                                                                                     |
 | Hooks                | ✅ Complete | usePlayer, useScout, useValidator, useSubscription, usePayToContact, useMilestoneHistory, useContractHealth, useIsPaused, useDebounce, useRequireWallet |
-| Off-chain indexer    | ✅ Complete | IndexerMetrics with tests in `packages/indexer/`                                                                                                                       |
-| Frontend tests       | ✅ Complete | Component, hook, lib, and page-level tests (see `__tests__/`); `scripts/validate-env.js` runs in CI                                                                    |
-| i18n                 | ✅ Complete | English, French, Swahili via next-intl; validator and admin dashboards fully translated                                                                                |
-| Scout public profile | ✅ Complete | `app/[locale]/scout/[id]/page.tsx` renders ScoutProfileCard + ActivityFeed with EmptyState fallback                                                                    |
-| Scout ContactModal   | ✅ Complete | `components/scout/ContactModal.tsx` displays unlocked email/phone/telegram                                                                                             |
-| Trial offer UI       | ✅ Complete | `components/scout/TrialOfferForm.tsx` wired into `app/[locale]/player/[id]/page.tsx` for `log_trial_offer`                                                             |
-| PWA raster icons     | ✅ Complete | 16/32/192/512 + maskable 512 PNGs in `public/icons/`, all entries in `manifest.json` resolve                                                                           |
+| Off-chain indexer    | ✅ Complete | IndexerMetrics with tests in `packages/indexer/`                                                                                                        |
+| Frontend tests       | ✅ Complete | Component, hook, lib, and page-level tests (see `__tests__/`); `scripts/validate-env.js` runs in CI                                                     |
+| i18n                 | ✅ Complete | English, French, Swahili via next-intl; validator and admin dashboards fully translated                                                                 |
+| Scout public profile | ✅ Complete | `app/[locale]/scout/[id]/page.tsx` renders ScoutProfileCard + ActivityFeed with EmptyState fallback                                                     |
+| Scout ContactModal   | ✅ Complete | `components/scout/ContactModal.tsx` displays unlocked email/phone/telegram                                                                              |
+| Trial offer UI       | ✅ Complete | `components/scout/TrialOfferForm.tsx` wired into `app/[locale]/player/[id]/page.tsx` for `log_trial_offer`                                              |
+| PWA raster icons     | ✅ Complete | 16/32/192/512 + maskable 512 PNGs in `public/icons/`, all entries in `manifest.json` resolve                                                            |
 
 ## Roadmap
 

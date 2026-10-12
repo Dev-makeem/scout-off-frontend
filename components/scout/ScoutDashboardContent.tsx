@@ -1,5 +1,5 @@
 'use client';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -8,6 +8,11 @@ import { useRequireWallet } from '@/hooks/useRequireWallet';
 import { useRequireSubscription } from '@/hooks/useRequireSubscription';
 import { useScout } from '@/hooks/useScout';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useMilestonesBatch } from '@/hooks/useMilestonesBatch';
+import {
+  MAX_COMPARE_PLAYERS,
+  useScoutDashboardFilters,
+} from '@/hooks/useScoutDashboardFilters';
 import { useOnboardingTour } from '@/hooks/useOnboardingTour';
 import { useWatchlist } from '@/hooks/useWatchlist';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
@@ -17,6 +22,10 @@ import useSWR from 'swr';
 import { getPlayer } from '@/lib/contract';
 import { fetchIndexerHealth, type IndexerHealth } from '@/lib/indexerClient';
 import PlayerCard from '@/components/PlayerCard';
+import PlayerCardSkeleton from '@/components/PlayerCardSkeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import SavedSearchesMenu from '@/components/scout/SavedSearchesMenu';
+import SubscriptionStatusBanner from '@/components/scout/SubscriptionStatusBanner';
 import PlayerFilterForm from '@/components/scout/PlayerFilterForm';
 import ReferralPanel from '@/components/scout/ReferralPanel';
 import SpendingSummary from '@/components/scout/SpendingSummary';
@@ -38,35 +47,9 @@ import {
 import type { VirtualizedPlayerGridHandle } from '@/components/scout/VirtualizedPlayerGrid';
 
 const PAGE_SIZE = 12;
-const MAX_COMPARE_PLAYERS = 4;
 
 function isStellarKey(v: string) {
   return /^G[A-Z2-7]{55}$/.test(v);
-}
-
-function parseCompareIds(raw: string | null): string[] {
-  return (raw ?? '')
-    .split(',')
-    .map((id) => id.trim())
-    .filter(Boolean)
-    .slice(0, MAX_COMPARE_PLAYERS);
-}
-
-/** Badge showing how many players matching a saved search appeared since it was last viewed. */
-function SavedSearchNewBadge({
-  filter,
-  lastViewedAt,
-}: {
-  filter: PlayerFilter;
-  lastViewedAt: number;
-}) {
-  const newCount = useSavedSearchNewCount(filter, lastViewedAt);
-  if (newCount === 0) return null;
-  return (
-    <span className="shrink-0 rounded-full bg-brand-green/20 px-2 py-0.5 text-xs font-medium text-brand-green">
-      {newCount} new
-    </span>
-  );
 }
 
 export default function ScoutDashboardContent() {
@@ -140,8 +123,6 @@ export default function ScoutDashboardContent() {
   const savedSearches = useSavedSearches(publicKey ?? null);
   const recentlyViewed = useRecentlyViewed();
   const { show: showToast } = useToast();
-  const [now, setNow] = useState(() => Date.now());
-  const [remainingSec, setRemainingSec] = useState<number | null>(null);
   const [searchAnnouncement, setSearchAnnouncement] = useState<string>('');
 
   const filters = useScoutDashboardFilters({
@@ -151,30 +132,21 @@ export default function ScoutDashboardContent() {
     search,
     searchByName,
   });
-  const { compareIds, toggleCompare, handleSearch } = filters;
+  const {
+    nameQuery,
+    setNameQuery,
+    remainingSec,
+    searchHasCompleted,
+    showSkeletons,
+    resetKey,
+    handleSearch,
+    handleClearFilters,
+    compareIds,
+    toggleCompare,
+    clearCompare,
+  } = filters;
   const showCompareBar = compareIds.length >= 2;
   const compareLimitReached = compareIds.length >= MAX_COMPARE_PLAYERS;
-
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    const currentIds = params.get('ids');
-    const nextIds = compareIds.join(',');
-
-    if (compareIds.length === 0 && !currentIds) return;
-    if (compareIds.length === 0) {
-      if (currentIds) {
-        params.delete('ids');
-        router.replace(`?${params.toString()}`);
-      }
-      return;
-    }
-
-    if (currentIds !== nextIds) {
-      params.set('ids', nextIds);
-      const nextQuery = params.toString().replace(/%2C/gi, ',');
-      router.replace(nextQuery ? `?${nextQuery}` : '?');
-    }
-  }, [compareIds, router, searchParams]);
 
   const [walletQuery, setWalletQuery] = useState('');
   const [searchResult, setSearchResult] = useState<
@@ -182,9 +154,6 @@ export default function ScoutDashboardContent() {
   >(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const [nameQuery, setNameQuery] = useState('');
-  const debouncedName = useDebounce(nameQuery, 300);
 
   // Keyboard-accessible pagination is preserved as a first-class navigation
   // mode alongside real scroll virtualization: `players` is fully in memory
@@ -233,15 +202,6 @@ export default function ScoutDashboardContent() {
   }
 
   useEffect(() => {
-    if (loading) {
-      loadingEverStarted.current = true;
-    } else if (loadingEverStarted.current) {
-      hasLoaded.current = true;
-      setSearchHasCompleted(true);
-    }
-  }, [loading]);
-
-  useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (!walletQuery) {
@@ -271,16 +231,6 @@ export default function ScoutDashboardContent() {
     };
   }, [walletQuery]);
 
-  useEffect(() => {
-    if (debouncedName) {
-      hasLoaded.current = false;
-      setSearchHasCompleted(false);
-      searchByName(debouncedName);
-    } else {
-      searchByName('');
-    }
-  }, [debouncedName, searchByName]);
-
   // Announce search results after debounce and fetch resolves
   useEffect(() => {
     if (!searchHasCompleted || nameQuery === '') {
@@ -295,43 +245,6 @@ export default function ScoutDashboardContent() {
       setSearchAnnouncement(t('players_found', { count: players.length }));
     }
   }, [searchHasCompleted, players.length, nameQuery, t]);
-
-  const handleSearch = useCallback(
-    (filter: PlayerFilter) => {
-      setNameQuery('');
-      hasLoaded.current = false;
-      search(filter);
-    },
-    [search],
-  );
-
-  const toggleCompare = useCallback(
-    (playerId: string) => {
-      setCompareIds((prev) => {
-        if (prev.includes(playerId)) {
-          return prev.filter((id) => id !== playerId);
-        }
-        if (prev.length >= MAX_COMPARE_PLAYERS) {
-          showToast({
-            message: `Maximum ${MAX_COMPARE_PLAYERS} players for comparison`,
-            variant: 'info',
-          });
-          return prev;
-        }
-        return [...prev, playerId];
-      });
-    },
-    [showToast],
-  );
-
-  const handleClearCompare = useCallback(() => {
-    setCompareIds([]);
-  }, []);
-
-  const handleClearFilters = useCallback(() => {
-    setNameQuery('');
-    setResetKey((k) => k + 1);
-  }, []);
 
   const handleToggleWatchlist = useCallback(
     (targetPlayer: Player) => {
@@ -357,22 +270,7 @@ export default function ScoutDashboardContent() {
   if (!publicKey) return null;
   if (subscriptionLoading || !isProtected) return null;
 
-  const showEmptyState =
-    filters.searchHasCompleted && !loading && players.length === 0;
-
-  const renderPlayerCard = (
-    p: Player,
-    milestones?: { milestones?: Milestone[]; milestonesLoading: boolean },
-  ) => (
-    <PlayerCard
-      player={p}
-      isWatched={watchlist.isWatched(p.id)}
-      onToggleWatchlist={() => handleToggleWatchlist(p)}
-      isCompareSelected={compareIds.includes(p.id)}
-      onToggleCompare={() => toggleCompare(p.id)}
-      {...milestones}
-    />
-  );
+  const showEmptyState = searchHasCompleted && !loading && players.length === 0;
 
   return (
     <PullToRefresh onRefresh={refetch} isLoading={loading}>
@@ -466,105 +364,15 @@ export default function ScoutDashboardContent() {
           </div>
         )}
 
-        {savedSearches.searches.length > 0 && (
-          <div className="bg-brand-card border border-gray-800 rounded-xl p-5 flex flex-col gap-3">
-            <h2 className="text-sm font-medium text-gray-300">
-              Saved Searches
-            </h2>
-            <ul className="flex flex-col gap-2">
-              {savedSearches.searches.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex items-center justify-between gap-3 text-sm text-gray-200"
-                >
-                  {renamingId === s.id ? (
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <input
-                        className="input flex-1 min-w-0"
-                        value={renameValue}
-                        onChange={(e) => setRenameValue(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const trimmed = renameValue.trim();
-                            if (trimmed) {
-                              savedSearches.rename(s.id, trimmed);
-                            }
-                            setRenamingId(null);
-                          }
-                          if (e.key === 'Escape') {
-                            setRenamingId(null);
-                          }
-                        }}
-                        autoFocus
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const trimmed = renameValue.trim();
-                          if (trimmed) {
-                            savedSearches.rename(s.id, trimmed);
-                          }
-                          setRenamingId(null);
-                        }}
-                        disabled={!renameValue.trim()}
-                        className="px-3 py-1 rounded-lg border border-brand-green text-xs text-brand-green disabled:opacity-40 hover:bg-brand-green hover:text-black transition"
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setRenamingId(null)}
-                        className="px-3 py-1 rounded-lg border border-gray-700 text-xs text-gray-300 hover:border-gray-500 transition"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <span className="flex items-center gap-2 truncate">
-                        <span className="truncate">{s.name}</span>
-                        <SavedSearchNewBadge
-                          filter={s.filter}
-                          lastViewedAt={s.lastViewedAt}
-                        />
-                      </span>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleSearch(s.filter);
-                            savedSearches.markViewed(s);
-                          }}
-                          className="px-3 py-1 rounded-lg border border-brand-green text-xs text-brand-green hover:bg-brand-green hover:text-black transition"
-                        >
-                          Apply
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setRenameValue(s.name);
-                            setRenamingId(s.id);
-                          }}
-                          className="px-3 py-1 rounded-lg border border-gray-700 text-xs text-gray-300 hover:border-yellow-500 hover:text-yellow-400 transition"
-                        >
-                          Rename
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => savedSearches.remove(s)}
-                          className="px-3 py-1 rounded-lg border border-gray-700 text-xs text-gray-300 hover:border-red-500 hover:text-red-400 transition"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <SavedSearchesMenu
+          searches={savedSearches.searches}
+          onApply={(s) => {
+            handleSearch(s.filter);
+            savedSearches.markViewed(s);
+          }}
+          onRename={savedSearches.rename}
+          onRemove={savedSearches.remove}
+        />
 
         <div
           className="bg-brand-card border border-gray-800 rounded-xl p-5 flex flex-col gap-3"
@@ -665,15 +473,15 @@ export default function ScoutDashboardContent() {
         </div>
 
         <div
-          className={`bg-brand-card border border-gray-800 rounded-xl p-5${filters.nameQuery ? ' opacity-50 pointer-events-none' : ''}`}
+          className={`bg-brand-card border border-gray-800 rounded-xl p-5${nameQuery ? ' opacity-50 pointer-events-none' : ''}`}
           data-tour="filter-section"
           data-testid="filter-form"
         >
           <PlayerFilterForm
             onSearch={handleSearch}
-            resetKey={filters.resetKey}
+            resetKey={resetKey}
             onSaveSearch={handleSaveSearch}
-            disabled={filters.remainingSec !== null}
+            disabled={remainingSec !== null}
           />
           <div className="mt-4 sm:max-w-xs">
             <Select
@@ -717,7 +525,7 @@ export default function ScoutDashboardContent() {
               </Link>
               <button
                 type="button"
-                onClick={filters.clearCompare}
+                onClick={clearCompare}
                 className="px-4 py-1.5 rounded-lg border border-gray-700 text-sm text-gray-300 hover:border-red-500 hover:text-red-400 transition"
               >
                 Clear

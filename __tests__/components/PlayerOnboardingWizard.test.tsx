@@ -557,7 +557,9 @@ describe('PlayerOnboardingWizard', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Contract error')).toBeInTheDocument();
+      expect(
+        screen.getByText('Contract error', { selector: 'span' }),
+      ).toBeInTheDocument();
     });
   });
 

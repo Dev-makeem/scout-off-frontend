@@ -428,12 +428,14 @@ describe('PlayerProfile pay-to-contact fee staleness check', () => {
     fireEvent.click(screen.getByRole('button', { name: /Pay to Contact/ }));
 
     expect(screen.getByText(/Confirming the current fee/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /Pay .* XLM to contact/ }),
+    ).toBeDisabled();
 
     resolveFee(1);
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Confirm' }),
+        screen.getByRole('button', { name: /Pay .* XLM to contact/ }),
       ).not.toBeDisabled(),
     );
   });
@@ -452,7 +454,9 @@ describe('PlayerProfile pay-to-contact fee staleness check', () => {
       ).toBeInTheDocument();
     });
     // The user is not locked out by a failed check — Confirm remains available.
-    expect(screen.getByRole('button', { name: 'Confirm' })).not.toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /Pay .* XLM to contact/ }),
+    ).not.toBeDisabled();
   });
 });
 

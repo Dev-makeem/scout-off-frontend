@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execSync } = require('child_process');
-const { validateEnvVars, parseEnvExample } = require('../scripts/validate-env.js');
+const {
+  validateEnvVars,
+  parseEnvExample,
+} = require('../scripts/validate-env.js');
 
 describe('validate-env.js', () => {
   let tempDir;
@@ -53,16 +56,22 @@ DATABASE_URL=postgresql://localhost/mydb
     it('should detect missing env var used in source but not in .env.example', () => {
       // Create fixture source file with env var usage
       const sourceFile = path.join(tempDir, 'source.ts');
-      fs.writeFileSync(sourceFile, `
+      fs.writeFileSync(
+        sourceFile,
+        `
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const secret = process.env.MISSING_SECRET_VAR;
-`);
+`,
+      );
 
       // Create fixture .env.example with only one var declared
       const envExampleFile = path.join(tempDir, '.env.example');
-      fs.writeFileSync(envExampleFile, `
+      fs.writeFileSync(
+        envExampleFile,
+        `
 NEXT_PUBLIC_API_URL=http://localhost:3000
-`);
+`,
+      );
 
       const result = validateEnvVars(tempDir, envExampleFile);
 
@@ -75,17 +84,23 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
     it('should return empty missing array when all env vars are declared', () => {
       // Create fixture source file
       const sourceFile = path.join(tempDir, 'source.ts');
-      fs.writeFileSync(sourceFile, `
+      fs.writeFileSync(
+        sourceFile,
+        `
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const dbUrl = process.env.DATABASE_URL;
-`);
+`,
+      );
 
       // Create fixture .env.example with all vars declared
       const envExampleFile = path.join(tempDir, '.env.example');
-      fs.writeFileSync(envExampleFile, `
+      fs.writeFileSync(
+        envExampleFile,
+        `
 NEXT_PUBLIC_API_URL=http://localhost:3000
 DATABASE_URL=postgresql://localhost/mydb
-`);
+`,
+      );
 
       const result = validateEnvVars(tempDir, envExampleFile);
 
@@ -96,11 +111,14 @@ DATABASE_URL=postgresql://localhost/mydb
     it('should ignore system variables like NODE_ENV', () => {
       // Create source file using NODE_ENV
       const sourceFile = path.join(tempDir, 'source.ts');
-      fs.writeFileSync(sourceFile, `
+      fs.writeFileSync(
+        sourceFile,
+        `
 if (process.env.NODE_ENV === 'production') {
   // do something
 }
-`);
+`,
+      );
 
       // Create .env.example without NODE_ENV
       const envExampleFile = path.join(tempDir, '.env.example');
@@ -116,21 +134,30 @@ if (process.env.NODE_ENV === 'production') {
     it('should scan multiple source files', () => {
       // Create multiple fixture source files
       const sourceFile1 = path.join(tempDir, 'file1.ts');
-      fs.writeFileSync(sourceFile1, `
+      fs.writeFileSync(
+        sourceFile1,
+        `
 const var1 = process.env.API_URL;
-`);
+`,
+      );
 
       const sourceFile2 = path.join(tempDir, 'file2.tsx');
-      fs.writeFileSync(sourceFile2, `
+      fs.writeFileSync(
+        sourceFile2,
+        `
 const var2 = process.env.DATABASE_URL;
-`);
+`,
+      );
 
       // Create .env.example
       const envExampleFile = path.join(tempDir, '.env.example');
-      fs.writeFileSync(envExampleFile, `
+      fs.writeFileSync(
+        envExampleFile,
+        `
 API_URL=http://localhost
 DATABASE_URL=postgresql://localhost
-`);
+`,
+      );
 
       const result = validateEnvVars(tempDir, envExampleFile);
 
@@ -142,23 +169,32 @@ DATABASE_URL=postgresql://localhost
     it('should not scan TypeScript files in node_modules', () => {
       // Create source file with env var
       const sourceFile = path.join(tempDir, 'source.ts');
-      fs.writeFileSync(sourceFile, `
+      fs.writeFileSync(
+        sourceFile,
+        `
 const apiUrl = process.env.DECLARED_VAR;
-`);
+`,
+      );
 
       // Create node_modules directory with a file using undefined env var
       const nodeModulesDir = path.join(tempDir, 'node_modules');
       fs.mkdirSync(nodeModulesDir);
       const nodeModuleFile = path.join(nodeModulesDir, 'package.ts');
-      fs.writeFileSync(nodeModuleFile, `
+      fs.writeFileSync(
+        nodeModuleFile,
+        `
 const secret = process.env.UNDECLARED_IN_NODEMODULES;
-`);
+`,
+      );
 
       // Create .env.example
       const envExampleFile = path.join(tempDir, '.env.example');
-      fs.writeFileSync(envExampleFile, `
+      fs.writeFileSync(
+        envExampleFile,
+        `
 DECLARED_VAR=value
-`);
+`,
+      );
 
       const result = validateEnvVars(tempDir, envExampleFile);
 
@@ -169,20 +205,29 @@ DECLARED_VAR=value
     it('should handle duplicate env var usage across files', () => {
       // Create two files using the same env var
       const sourceFile1 = path.join(tempDir, 'file1.ts');
-      fs.writeFileSync(sourceFile1, `
+      fs.writeFileSync(
+        sourceFile1,
+        `
 const apiUrl = process.env.API_URL;
-`);
+`,
+      );
 
       const sourceFile2 = path.join(tempDir, 'file2.ts');
-      fs.writeFileSync(sourceFile2, `
+      fs.writeFileSync(
+        sourceFile2,
+        `
 const apiUrl2 = process.env.API_URL;
-`);
+`,
+      );
 
       // Create .env.example
       const envExampleFile = path.join(tempDir, '.env.example');
-      fs.writeFileSync(envExampleFile, `
+      fs.writeFileSync(
+        envExampleFile,
+        `
 API_URL=http://localhost
-`);
+`,
+      );
 
       const result = validateEnvVars(tempDir, envExampleFile);
 
@@ -197,19 +242,27 @@ API_URL=http://localhost
     it('should exit with code 0 when all env vars are declared', () => {
       // Create source file
       const sourceFile = path.join(tempDir, 'source.ts');
-      fs.writeFileSync(sourceFile, `
+      fs.writeFileSync(
+        sourceFile,
+        `
 const apiUrl = process.env.API_URL;
-`);
+`,
+      );
 
       // Create .env.example
       const envExampleFile = path.join(tempDir, '.env.example');
-      fs.writeFileSync(envExampleFile, `
+      fs.writeFileSync(
+        envExampleFile,
+        `
 API_URL=http://localhost
-`);
+`,
+      );
 
       // Create validate script that runs against our temp dir
       const testScript = path.join(tempDir, 'validate-test.js');
-      fs.writeFileSync(testScript, `
+      fs.writeFileSync(
+        testScript,
+        `
 const { validateEnvVars } = require('${path.join(__dirname, '../scripts/validate-env.js')}');
 const result = validateEnvVars('${tempDir}', '${envExampleFile}');
 if (result.missing.length) {
@@ -218,7 +271,8 @@ if (result.missing.length) {
 }
 console.log('✓ All env vars declared');
 process.exit(0);
-`);
+`,
+      );
 
       const exitCode = execSync(`node ${testScript}`, { encoding: 'utf8' });
       // execSync returns the output, exit code 0 means success
@@ -228,9 +282,12 @@ process.exit(0);
     it('should exit with non-zero code when env vars are missing', () => {
       // Create source file with missing env var
       const sourceFile = path.join(tempDir, 'source.ts');
-      fs.writeFileSync(sourceFile, `
+      fs.writeFileSync(
+        sourceFile,
+        `
 const secret = process.env.MISSING_VAR;
-`);
+`,
+      );
 
       // Create .env.example without the missing var
       const envExampleFile = path.join(tempDir, '.env.example');
@@ -238,7 +295,9 @@ const secret = process.env.MISSING_VAR;
 
       // Create validate script
       const testScript = path.join(tempDir, 'validate-test.js');
-      fs.writeFileSync(testScript, `
+      fs.writeFileSync(
+        testScript,
+        `
 const { validateEnvVars } = require('${path.join(__dirname, '../scripts/validate-env.js')}');
 const result = validateEnvVars('${tempDir}', '${envExampleFile}');
 if (result.missing.length) {
@@ -247,7 +306,8 @@ if (result.missing.length) {
 }
 console.log('✓ All env vars declared');
 process.exit(0);
-`);
+`,
+      );
 
       let exitCode;
       try {
@@ -265,18 +325,26 @@ process.exit(0);
     it('should report missing vars when invoked as a CLI script', () => {
       // Create fixture structure
       const sourceFile = path.join(tempDir, 'app.ts');
-      fs.writeFileSync(sourceFile, `
+      fs.writeFileSync(
+        sourceFile,
+        `
 const apiUrl = process.env.MISSING_API_URL;
-`);
+`,
+      );
 
       const envExampleFile = path.join(tempDir, '.env.example');
-      fs.writeFileSync(envExampleFile, `
+      fs.writeFileSync(
+        envExampleFile,
+        `
 SOME_OTHER_VAR=value
-`);
+`,
+      );
 
       // Create a test runner script that mimics CLI usage
       const testScript = path.join(tempDir, 'run-validate.js');
-      fs.writeFileSync(testScript, `
+      fs.writeFileSync(
+        testScript,
+        `
 const path = require('path');
 const { validateEnvVars } = require('${path.join(__dirname, '../scripts/validate-env.js')}');
 
@@ -289,7 +357,8 @@ if (missing.length) {
 }
 console.log('✓ All env vars declared');
 process.exit(0);
-`);
+`,
+      );
 
       let stderr = '';
       let exitCode = 0;
@@ -297,7 +366,7 @@ process.exit(0);
       try {
         execSync(`node ${testScript}`, {
           encoding: 'utf8',
-          stdio: ['pipe', 'pipe', 'pipe']
+          stdio: ['pipe', 'pipe', 'pipe'],
         });
       } catch (error) {
         stderr = error.stderr || '';

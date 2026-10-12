@@ -233,9 +233,7 @@ export const SeveralSessions: Story = {
  * while the DELETE request is in flight.
  */
 export const RevokeInProgress: Story = {
-  render: () => (
-    <SessionsList sessions={MOCK_SESSIONS} revokingId="sess-2" />
-  ),
+  render: () => <SessionsList sessions={MOCK_SESSIONS} revokingId="sess-2" />,
 };
 
 // ── Error ───────────────────────────────────────────────────────────────────

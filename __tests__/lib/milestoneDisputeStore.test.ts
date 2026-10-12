@@ -351,7 +351,9 @@ describe('escalateUnanswered()', () => {
       revokeTxHash: null,
     });
     const db = (store as unknown as { db: { prepare: Function } }).db;
-    db.prepare(`UPDATE milestone_disputes SET response_deadline = 1 WHERE id = ?`).run(d.id);
+    db.prepare(
+      `UPDATE milestone_disputes SET response_deadline = 1 WHERE id = ?`,
+    ).run(d.id);
 
     // Should not re-escalate already-decided disputes
     const count = store.escalateUnanswered(Date.now());
@@ -362,7 +364,9 @@ describe('escalateUnanswered()', () => {
   it('records an escalated system event on each escalated dispute', () => {
     const d = store.create(makeInput());
     const db = (store as unknown as { db: { prepare: Function } }).db;
-    db.prepare(`UPDATE milestone_disputes SET response_deadline = 1 WHERE id = ?`).run(d.id);
+    db.prepare(
+      `UPDATE milestone_disputes SET response_deadline = 1 WHERE id = ?`,
+    ).run(d.id);
 
     store.escalateUnanswered(Date.now());
     const events = store.getEvents(d.id);
@@ -375,7 +379,9 @@ describe('escalateUnanswered()', () => {
     const d = store.create(makeInput());
     store.markUnderReview(d.id, 'GVALIDATOR');
     const db = (store as unknown as { db: { prepare: Function } }).db;
-    db.prepare(`UPDATE milestone_disputes SET response_deadline = 1 WHERE id = ?`).run(d.id);
+    db.prepare(
+      `UPDATE milestone_disputes SET response_deadline = 1 WHERE id = ?`,
+    ).run(d.id);
 
     // escalateUnanswered only targets 'pending' rows
     const count = store.escalateUnanswered(Date.now());

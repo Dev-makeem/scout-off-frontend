@@ -6,7 +6,12 @@ export interface CvContent {
   vitals: Player['vitals'];
   stats: Player['stats'] | null;
   progressLevel: Player['progressLevel'];
-  milestones: Array<Pick<Milestone, 'id' | 'description' | 'evidenceHash' | 'validator' | 'timestamp'>>;
+  milestones: Array<
+    Pick<
+      Milestone,
+      'id' | 'description' | 'evidenceHash' | 'validator' | 'timestamp'
+    >
+  >;
 }
 
 export interface CvLedgerReference {

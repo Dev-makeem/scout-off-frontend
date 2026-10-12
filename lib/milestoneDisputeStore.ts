@@ -34,10 +34,7 @@ import type {
  * filed. Defaults to 7 days. Override via DISPUTE_RESPONSE_WINDOW_MS env var.
  */
 export function getResponseWindowMs(): number {
-  const val = parseInt(
-    process.env.DISPUTE_RESPONSE_WINDOW_MS ?? '',
-    10,
-  );
+  const val = parseInt(process.env.DISPUTE_RESPONSE_WINDOW_MS ?? '', 10);
   return Number.isFinite(val) && val > 0 ? val : 7 * 24 * 60 * 60 * 1000;
 }
 
@@ -176,7 +173,10 @@ export interface CreateDisputeInput {
 }
 
 export interface DecideDisputeInput {
-  status: Exclude<MilestoneDisputeStatus, 'pending' | 'under_review' | 'escalated'>;
+  status: Exclude<
+    MilestoneDisputeStatus,
+    'pending' | 'under_review' | 'escalated'
+  >;
   decidedBy: string;
   resolutionNote: string | null;
   revokeTxHash: string | null;
@@ -333,10 +333,18 @@ export class MilestoneDisputeStore {
 
   /** Deletes every dispute owned by playerWallet. Returns the number of rows removed. */
   deleteForWallet(playerWallet: string): number {
-    const result = this.db
-      .prepare('DELETE FROM milestone_disputes WHERE player_wallet = ?')
-      .run(playerWallet);
-    return result.changes;
+    // dispute_events rows reference their dispute, so they go first.
+    return this.db.transaction(() => {
+      this.db
+        .prepare(
+          `DELETE FROM dispute_events WHERE dispute_id IN
+             (SELECT id FROM milestone_disputes WHERE player_wallet = ?)`,
+        )
+        .run(playerWallet);
+      return this.db
+        .prepare('DELETE FROM milestone_disputes WHERE player_wallet = ?')
+        .run(playerWallet).changes;
+    })();
   }
 
   listAll(status?: MilestoneDisputeStatus): MilestoneDispute[] {
@@ -353,7 +361,7 @@ export class MilestoneDisputeStore {
   }
 
   decide(id: number, input: DecideDisputeInput): MilestoneDispute {
-    this.db
+    const result = this.db
       .prepare(
         `UPDATE milestone_disputes
          SET status = @status, decided_at = @decided_at, decided_by = @decided_by,
@@ -368,6 +376,9 @@ export class MilestoneDisputeStore {
         resolution_note: input.resolutionNote,
         revoke_tx_hash: input.revokeTxHash,
       });
+    if (result.changes === 0) {
+      throw new Error(`Dispute ${id} not found`);
+    }
 
     // Record the decision event on the timeline.
     this.addEvent(id, {

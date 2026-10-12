@@ -23,7 +23,8 @@
  *   - Each fromWallet can only have one active (pending/approved) request
  *     at a time.
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { privateJson } from '@/lib/httpResponses';
 import { getSessionWallet } from '@/lib/session';
 import { MigrationStore } from '@/lib/migrationStore';
 import { createRequestLogger } from '@/lib/logger';
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
     windowMs: 60 * 60 * 1000,
   });
   if (rl.limited) {
-    return NextResponse.json(
+    return privateJson(
       { error: 'Too many migration requests. Please try again later.' },
       {
         status: 429,
@@ -52,34 +53,31 @@ export async function POST(req: NextRequest) {
   // Caller must be authenticated as the backup (destination) wallet
   const toWallet = getSessionWallet(req);
   if (!toWallet) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return privateJson({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
   const { fromWallet } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof fromWallet !== 'string' || !fromWallet.trim()) {
-    return NextResponse.json(
-      { error: 'fromWallet is required' },
-      { status: 400 },
-    );
+    return privateJson({ error: 'fromWallet is required' }, { status: 400 });
   }
 
   if (!/^G[A-Z2-7]{55}$/.test(fromWallet.trim())) {
-    return NextResponse.json(
+    return privateJson(
       { error: 'fromWallet must be a valid Stellar public key' },
       { status: 400 },
     );
   }
 
   if (fromWallet.trim() === toWallet) {
-    return NextResponse.json(
+    return privateJson(
       { error: 'fromWallet and toWallet must be different' },
       { status: 400 },
     );
@@ -102,11 +100,11 @@ export async function POST(req: NextRequest) {
       executeAfter: request.executeAfter,
     });
 
-    return NextResponse.json(request, { status: 201 });
+    return privateJson(request, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     log.warn('Migration request rejected', { reason: message });
-    return NextResponse.json({ error: message }, { status: 409 });
+    return privateJson({ error: message }, { status: 409 });
   }
 }
 
@@ -114,9 +112,9 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const wallet = getSessionWallet(req);
   if (!wallet) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return privateJson({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const requests = MigrationStore.getInstance().listForWallet(wallet);
-  return NextResponse.json({ requests });
+  return privateJson({ requests });
 }

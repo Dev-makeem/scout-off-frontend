@@ -39,7 +39,10 @@ const basePlayer = (overrides: Partial<Player>): Player => ({
   ...overrides,
 });
 
-const createMilestone = (id: string, description: string): Player['milestones'][0] => ({
+const createMilestone = (
+  id: string,
+  description: string,
+): Player['milestones'][0] => ({
   id,
   description,
   evidenceHash: `QmHash${id}`,
@@ -64,7 +67,9 @@ export const TwoPlayers: Story = {
         },
         progressLevel: 1,
         stats: { goals: 12, assists: 5, appearances: 25 },
-        milestones: [createMilestone('ms_001', 'Scored hat-trick in regional final')],
+        milestones: [
+          createMilestone('ms_001', 'Scored hat-trick in regional final'),
+        ],
       }),
       basePlayer({
         id: 'player_002',
@@ -102,7 +107,9 @@ export const MaximumPlayers: Story = {
         },
         progressLevel: 1,
         stats: { goals: 12, assists: 5, appearances: 25 },
-        milestones: [createMilestone('ms_001', 'Scored hat-trick in regional final')],
+        milestones: [
+          createMilestone('ms_001', 'Scored hat-trick in regional final'),
+        ],
       }),
       basePlayer({
         id: 'player_002',
@@ -171,7 +178,9 @@ export const PlayerWithMissingStats: Story = {
         },
         progressLevel: 1,
         stats: { goals: 12, assists: 5, appearances: 25 },
-        milestones: [createMilestone('ms_001', 'Scored hat-trick in regional final')],
+        milestones: [
+          createMilestone('ms_001', 'Scored hat-trick in regional final'),
+        ],
       }),
       basePlayer({
         id: 'player_002',
@@ -206,7 +215,9 @@ export const LongName: Story = {
         },
         progressLevel: 1,
         stats: { goals: 12, assists: 5, appearances: 25 },
-        milestones: [createMilestone('ms_001', 'Scored hat-trick in regional final')],
+        milestones: [
+          createMilestone('ms_001', 'Scored hat-trick in regional final'),
+        ],
       }),
       basePlayer({
         id: 'player_002',
@@ -244,7 +255,9 @@ export const MobileViewport: Story = {
         },
         progressLevel: 1,
         stats: { goals: 12, assists: 5, appearances: 25 },
-        milestones: [createMilestone('ms_001', 'Scored hat-trick in regional final')],
+        milestones: [
+          createMilestone('ms_001', 'Scored hat-trick in regional final'),
+        ],
       }),
       basePlayer({
         id: 'player_002',

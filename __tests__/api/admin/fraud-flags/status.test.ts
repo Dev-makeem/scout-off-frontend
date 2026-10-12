@@ -68,6 +68,10 @@ describe('GET /api/admin/fraud-flags/status', () => {
       evaluatedAt: null,
       highSeverityCount: 0,
       trigger: null,
+      // Incremental-run stats; recordRun() here doesn't pass any.
+      durationMs: 0,
+      eventsProcessed: 0,
+      lastLedger: 0,
     });
   });
 
@@ -85,6 +89,10 @@ describe('GET /api/admin/fraud-flags/status', () => {
       evaluatedAt: NOW - 60_000,
       highSeverityCount: 2,
       trigger: 'cron',
+      // Incremental-run stats; recordRun() here doesn't pass any.
+      durationMs: 0,
+      eventsProcessed: 0,
+      lastLedger: 0,
     });
   });
 
@@ -110,6 +118,10 @@ describe('GET /api/admin/fraud-flags/status', () => {
       evaluatedAt: NOW - 10_000,
       highSeverityCount: 0,
       trigger: 'cron',
+      // Incremental-run stats; recordRun() here doesn't pass any.
+      durationMs: 0,
+      eventsProcessed: 0,
+      lastLedger: 0,
     });
   });
 });

@@ -7,7 +7,11 @@ import {
   type EventType,
 } from './schema/v1';
 
-export { CONTRACT_VERSION, decodeV1HorizonOperation, decodeV1SorobanEvent } from './schema/v1';
+export {
+  CONTRACT_VERSION,
+  decodeV1HorizonOperation,
+  decodeV1SorobanEvent,
+} from './schema/v1';
 export type { DecodedSchemaEvent, EventType } from './schema/v1';
 
 export interface VersionedEvent extends DecodedSchemaEvent {
@@ -20,7 +24,9 @@ export interface RawSorobanEventInput {
   contractVersion?: number;
 }
 
-export function decodeSorobanEvent(input: RawSorobanEventInput): VersionedEvent {
+export function decodeSorobanEvent(
+  input: RawSorobanEventInput,
+): VersionedEvent {
   if ((input.contractVersion ?? CONTRACT_VERSION) === CONTRACT_VERSION) {
     return decodeV1SorobanEvent(input.topic, input.value);
   }

@@ -323,9 +323,10 @@ describe('BulkPlayerImport', () => {
     render(<BulkPlayerImport />);
     await uploadFile(VALID_CSV, 'players.csv');
 
+    // Disabled with a visible reason: aria-disabled keeps it focusable.
     expect(
       screen.getByRole('button', { name: /import 2 valid players/i }),
-    ).toBeDisabled();
+    ).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('disables the import and reset controls once submission is in progress', async () => {

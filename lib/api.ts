@@ -131,6 +131,8 @@ export interface ActivityEvent {
   timestamp: number;
   actor: string;
   subjectId?: string;
+  /** Ledger the event was emitted in, when the source reports it. */
+  ledger?: number;
 }
 
 export const fetchActivityEvents = (

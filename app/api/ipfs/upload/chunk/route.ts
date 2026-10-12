@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { apiError, ApiErrorCode } from '@/lib/apiErrors';
 import { privateJson } from '@/lib/httpResponses';
 import {
@@ -132,10 +132,16 @@ export async function POST(req: NextRequest) {
     return privateJson(status);
   } catch (err) {
     if (err instanceof ChunkTooLargeError) {
-      return privateJson({ error: err.message }, { status: 413 });
+      return privateJson(
+        { error: 'Chunk exceeds the size limit for this upload' },
+        { status: 413 },
+      );
     }
     if (err instanceof TotalSizeExceededError) {
-      return privateJson({ error: err.message }, { status: 413 });
+      return privateJson(
+        { error: 'Upload would exceed the declared file size' },
+        { status: 413 },
+      );
     }
     // An out-of-range index is a validation error, not a missing session.
     if (err instanceof ChunkIndexOutOfRangeError) {
@@ -153,11 +159,8 @@ export async function POST(req: NextRequest) {
       );
     }
     createRequestLogger(req).error('Failed to write upload chunk', {
-      error: err instanceof Error ? err.message : String(err),
+      reason: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json(
-      { error: 'Failed to write chunk' },
-      { status: 500 },
-    );
+    return privateJson({ error: 'Failed to write chunk' }, { status: 500 });
   }
 }

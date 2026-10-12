@@ -12,6 +12,11 @@ import {
 import { createSessionToken } from '@/lib/session';
 import { SessionStore } from '@/lib/sessionStore';
 
+// /complete fails fast with 503 when Pinata isn't configured (#1441); these
+// specs exercise what happens after that check.
+process.env.PINATA_API_KEY ??= 'test-api-key';
+process.env.PINATA_SECRET ??= 'test-secret';
+
 jest.mock('axios');
 
 const OWNER = 'GOWNERWALLETXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';

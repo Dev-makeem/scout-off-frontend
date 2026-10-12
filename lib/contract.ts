@@ -17,6 +17,7 @@ import {
   nativeToScVal,
   scValToNative,
   xdr,
+  Operation,
   TransactionBuilder as TB,
   Account,
   StrKey,
@@ -300,7 +301,7 @@ async function buildTx(
       networkPassphrase: NETWORK,
     })
       .setSorobanData(simulation.restorePreamble.transactionData.build())
-      .addOperation(xdr.Operation.restoreFootprint({}))
+      .addOperation(Operation.restoreFootprint({}))
       .setTimeout(30)
       .build();
 
@@ -820,12 +821,7 @@ export async function logTrialOffer(
   details: TrialOfferDetails,
   signFn: (xdr: string) => Promise<string>,
 ): Promise<void> {
-  const xdrTx = await buildLogTrialOffer(
-    scoutKey,
-    playerId,
-    details,
-    signFn,
-  );
+  const xdrTx = await buildLogTrialOffer(scoutKey, playerId, details, signFn);
   await signAndSubmitTx(xdrTx, signFn);
 }
 

@@ -94,7 +94,10 @@ describe('lib/api – axios instance configuration', () => {
   });
 
   it('sets baseURL from NEXT_PUBLIC_API_URL or falls back to localhost:4000', () => {
-    const [[callArgs]] = (axios.create as jest.Mock).mock.calls;
+    // lib/api imports lib/indexerClient, whose own client is created first.
+    const callArgs = (axios.create as jest.Mock).mock.calls
+      .map(([args]) => args)
+      .find((args) => args.baseURL !== '/api/indexer');
     expect(callArgs.baseURL).toMatch(/localhost:4000|https?:\/\//);
   });
 });

@@ -3,10 +3,7 @@ import type { PDFFont } from 'pdf-lib';
 import QRCode from 'qrcode';
 import { getProgressLabel } from '@/lib/progress';
 import { fetchAcademyForWallet } from '@/lib/api';
-import {
-  buildCvContent,
-  hashCvContent,
-} from '@/lib/cvVerification';
+import { buildCvContent, hashCvContent } from '@/lib/cvVerification';
 
 const PAGE_WIDTH = 595.28; // A4, points
 const PAGE_HEIGHT = 841.89;
@@ -61,7 +58,9 @@ export async function requestCvVerification(
     contentHash: string;
   };
   if (result.contentHash !== contentHash) {
-    throw new Error('The signed CV content does not match the exported content');
+    throw new Error(
+      'The signed CV content does not match the exported content',
+    );
   }
 
   const locale = window.location.pathname.split('/')[1] || 'en';

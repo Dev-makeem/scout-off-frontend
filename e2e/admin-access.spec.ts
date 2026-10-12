@@ -13,12 +13,12 @@ import { installMockFreighter } from './fixtures/wallet-mock';
 import { Keypair } from '@stellar/stellar-sdk';
 
 // Generate a deterministic admin keypair for testing
-const ADMIN_SECRET = 'SADMINKEYSECRETFORTESTINGADMINPANELACCESS123456789ABC';
+const ADMIN_SECRET = 'SAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC5MY';
 const ADMIN_KEYPAIR = Keypair.fromSecret(ADMIN_SECRET);
 const ADMIN_ADDRESS = ADMIN_KEYPAIR.publicKey();
 
 // Non-admin test wallet (different from admin)
-const NON_ADMIN_SECRET = 'SNONADMINSECRETFORTESTINGDENIEDACCESS123456789ABCDE';
+const NON_ADMIN_SECRET = 'SABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAFNE7';
 const NON_ADMIN_KEYPAIR = Keypair.fromSecret(NON_ADMIN_SECRET);
 const NON_ADMIN_ADDRESS = NON_ADMIN_KEYPAIR.publicKey();
 

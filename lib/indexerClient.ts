@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { BACKEND_READ_TIMEOUT_MS, createClient } from './httpClient';
 import type { Milestone, Player } from '@/types';
 
 /**
@@ -22,7 +22,8 @@ function indexerBaseUrl(): string {
   );
 }
 
-const indexerApi = axios.create({
+const indexerApi = createClient('indexer', {
+  timeoutMs: BACKEND_READ_TIMEOUT_MS,
   baseURL: indexerBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
 });

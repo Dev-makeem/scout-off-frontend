@@ -139,17 +139,28 @@ describe('AutomatedModerationLog', () => {
     expect(screen.getByText('profanity_filter')).toBeInTheDocument();
   });
 
-  it('filters rows by user ID', async () => {
+  it('filters rows by user ID on the server', async () => {
     respondWith({ entries: ENTRIES });
     render(<AutomatedModerationLog />);
     await screen.findByText('repeated_links');
 
+    // The filter runs server-side (so it covers every page): Enter refetches
+    // with ?userId= and the table shows whatever the API returns.
+    respondWith({
+      entries: ENTRIES.filter((e) => e.data?.userId === 'user-alice'),
+    });
     await userEvent.type(
       screen.getByPlaceholderText('User ID...'),
-      'user-alice',
+      'user-alice{Enter}',
     );
-    expect(screen.getByText('repeated_links')).toBeInTheDocument();
-    expect(screen.queryByText('profanity_filter')).not.toBeInTheDocument();
+
+    await waitFor(() =>
+      expect(mockFetch).toHaveBeenLastCalledWith(`${API}?userId=user-alice`),
+    );
+    expect(await screen.findByText('repeated_links')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByText('profanity_filter')).not.toBeInTheDocument(),
+    );
   });
 
   it('refetches from the API when Refresh is clicked', async () => {

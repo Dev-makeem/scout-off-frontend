@@ -17,7 +17,7 @@ import { Keypair } from '@stellar/stellar-sdk';
 // Admin keypair for testing (must match the environment variable in test setup)
 const ADMIN_SECRET =
   process.env.E2E_ADMIN_SECRET ??
-  'SADMINKEYSECRETFORTESTINGFEEWITHDRAWAL123456789ABCDE';
+  'SABQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGC45';
 const ADMIN_KEYPAIR = Keypair.fromSecret(ADMIN_SECRET);
 const ADMIN_ADDRESS = ADMIN_KEYPAIR.publicKey();
 

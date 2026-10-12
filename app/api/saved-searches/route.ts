@@ -20,7 +20,10 @@ export const runtime = 'nodejs';
  */
 function parseVersionHeader(header: string | null): number | undefined {
   if (!header) return undefined;
-  const cleaned = header.replace(/^W\//i, '').replace(/^"(.*)"$/, '$1').trim();
+  const cleaned = header
+    .replace(/^W\//i, '')
+    .replace(/^"(.*)"$/, '$1')
+    .trim();
   const parsed = Number(cleaned);
   return Number.isFinite(parsed) ? parsed : undefined;
 }

@@ -112,6 +112,7 @@ describe('useValidator', () => {
       PUBLIC_KEY,
       'p1',
       'milestone-1',
+      undefined, // signOnly
     );
     expect(result.current.error).toBeNull();
   });
@@ -178,6 +179,7 @@ describe('useValidator', () => {
       PUBLIC_KEY,
       'p1',
       'milestone-1',
+      undefined, // signOnly
     );
     expect(mockSignAndSubmit).toHaveBeenCalledWith('revoke-xdr');
   });

@@ -201,6 +201,8 @@
     "ledgerConnect": "TODO: Machine-translated - Pochi ya vifaa — unganisha kupitia USB",
     "ledgerInstructions": "TODO: Machine-translated - Unganisha kifaa chako cha Ledger kupitia USB na ufungue programu ya Stellar.",
     "comingSoon": "TODO: Machine-translated - Inakuja hivi karibuni",
+    "rememberDevice": "Kumbuka kifaa hiki",
+    "rememberDeviceHint": "Endelea kuingia kwenye kifaa hiki kwa siku 30 bila kusaini tena.",
     "accountSwitched": "TODO: Machine-translated - Akaunti imebadilishwa kwa mafanikio.",
     "accountSwitchFailed": "TODO: Machine-translated - Imeshindwa kubadilisha akaunti. Tafadhali jaribu tena.",
     "accountSwitchMismatch": "TODO: Machine-translated - Nyongeza ya pochi yako iko kwenye akaunti tofauti na ile uliyochagua. Tafadhali badilisha akaunti inayotumika ndani ya nyongeza ya pochi yako, kisha jaribu tena.",

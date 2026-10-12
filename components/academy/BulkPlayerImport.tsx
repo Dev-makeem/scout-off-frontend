@@ -665,8 +665,14 @@ export default function BulkPlayerImport() {
                     validRows.length === 0 ||
                     !publicKey
                   }
-                  disabledReason={isPaused ? tContractStatus('paused_hint') : undefined}
-                  title={!isPaused && !publicKey ? t('connectWalletTitle') : undefined}
+                  disabledReason={
+                    isPaused ? tContractStatus('paused_hint') : undefined
+                  }
+                  title={
+                    !isPaused && !publicKey
+                      ? t('connectWalletTitle')
+                      : undefined
+                  }
                 >
                   {phase === 'submitting'
                     ? isPausedBatch

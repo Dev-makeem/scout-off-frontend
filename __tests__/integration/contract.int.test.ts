@@ -91,7 +91,9 @@ async function contractSimulate(
     .build();
   const result = await rpcServer.simulateTransaction(tx);
   if ('result' in result) return scValToNative(result.result!.retval);
-  throw parseContractError((result as { error?: string }).error ?? 'Simulation failed');
+  throw parseContractError(
+    (result as { error?: string }).error ?? 'Simulation failed',
+  );
 }
 
 // ── Helper: build + sign + submit + poll ──────────────────────────────────────
@@ -162,7 +164,8 @@ describe('register_player → getPlayer (vitals round-trip)', () => {
     region: 'West Africa',
     nationality: 'GH',
   };
-  const ipfsHash = 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi';
+  const ipfsHash =
+    'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi';
 
   test('register_player succeeds and returns a player ID', async () => {
     const result = await contractInvoke(
@@ -300,7 +303,7 @@ describe('subscribe → payToContact', () => {
     expect(sub).toBeDefined();
     expect(sub.tier).toBe('basic');
     expect(typeof sub.expiresAt).toBe('number');
-    expect((sub.expiresAt as number)).toBeGreaterThan(Date.now() / 1000);
+    expect(sub.expiresAt as number).toBeGreaterThan(Date.now() / 1000);
   });
 
   test('payToContact returns contact details for the registered player', async () => {
@@ -373,9 +376,12 @@ describe('pause_contract → write fails with error 9', () => {
         [
           nativeToScVal(newPlayer.publicKey(), { type: 'address' }),
           nativeToScVal(vitals),
-          nativeToScVal('bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi', {
-            type: 'string',
-          }),
+          nativeToScVal(
+            'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi',
+            {
+              type: 'string',
+            },
+          ),
         ],
         newPlayer,
       ),

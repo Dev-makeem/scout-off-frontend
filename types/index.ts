@@ -394,11 +394,11 @@ export interface MilestoneDispute {
   milestoneDescription: string;
   reason: string;
   status: MilestoneDisputeStatus;
-  createdAt: number;     // Unix ms
+  createdAt: number; // Unix ms
   /** UTC deadline by which the validator must respond (Unix ms). */
   responseDeadline: number;
-  decidedAt: number | null;  // Unix ms
-  decidedBy: string | null;  // admin wallet
+  decidedAt: number | null; // Unix ms
+  decidedBy: string | null; // admin wallet
   resolutionNote: string | null;
   /** Set only when status is 'reversed' — the on-chain revoke_milestone tx hash. */
   revokeTxHash: string | null;

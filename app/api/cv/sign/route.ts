@@ -68,7 +68,11 @@ export async function POST(req: NextRequest) {
   }
 
   const { playerId, contentHash } = (body ?? {}) as Record<string, unknown>;
-  if (typeof playerId !== 'string' || !playerId || typeof contentHash !== 'string') {
+  if (
+    typeof playerId !== 'string' ||
+    !playerId ||
+    typeof contentHash !== 'string'
+  ) {
     return NextResponse.json(
       { error: 'playerId and contentHash are required' },
       { status: 400 },
@@ -77,7 +81,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const player = (await getPlayer(playerId)) as Player;
-    const milestones = ((await getMilestoneHistory(playerId)) as Milestone[]) ?? [];
+    const milestones =
+      ((await getMilestoneHistory(playerId)) as Milestone[]) ?? [];
     const content = buildCvContent(player, milestones);
     const canonicalContent = canonicalizeCvContent(content);
     const currentHash = hashCanonicalCvContent(canonicalContent);

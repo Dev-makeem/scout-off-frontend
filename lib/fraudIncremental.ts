@@ -1,9 +1,6 @@
 import type { ActivityEvent } from '@/lib/api';
 import type { ReferralCode, FraudFlag } from '@/types';
-import {
-  DEFAULT_THRESHOLDS,
-  type FraudThresholds,
-} from './fraudDetection';
+import { DEFAULT_THRESHOLDS, type FraudThresholds } from './fraudDetection';
 
 /**
  * Incremental fraud-heuristic evaluation engine.
@@ -65,7 +62,9 @@ export interface IncrementalFraudState {
   updatedAt: number;
 }
 
-export function createEmptyWalletAggregate(wallet: string): WalletFraudAggregate {
+export function createEmptyWalletAggregate(
+  wallet: string,
+): WalletFraudAggregate {
   return {
     wallet,
     referral: {
@@ -145,7 +144,8 @@ export function applyReferralCode(
   const isNew = !existingCode;
   const isUpdated =
     existingCode &&
-    (existingCode.usedBy !== code.usedBy || existingCode.usedAt !== code.usedAt);
+    (existingCode.usedBy !== code.usedBy ||
+      existingCode.usedAt !== code.usedAt);
 
   if (isNew || isUpdated) {
     scoutAgg.referral.scoutCodes[code.code] = {
@@ -159,7 +159,9 @@ export function applyReferralCode(
 
     // Self-redemption check
     if (code.usedBy && code.usedBy === scoutWallet) {
-      if (!scoutAgg.referral.selfRedemptions.some((s) => s.code === code.code)) {
+      if (
+        !scoutAgg.referral.selfRedemptions.some((s) => s.code === code.code)
+      ) {
         scoutAgg.referral.selfRedemptions.push({
           code: code.code,
           createdAt: code.createdAt,
@@ -250,8 +252,14 @@ export function evaluateRulesForWallet(
   // 2) Fast redemption pattern (wallet as scout)
   const scoutCodesList = Object.values(agg.referral.scoutCodes);
   const redeemed = scoutCodesList.filter(
-    (c): c is { code: string; createdAt: number; usedAt: number; usedBy: string } =>
-      c.usedBy !== null && c.usedAt !== null,
+    (
+      c,
+    ): c is {
+      code: string;
+      createdAt: number;
+      usedAt: number;
+      usedBy: string;
+    } => c.usedBy !== null && c.usedAt !== null,
   );
   if (redeemed.length >= t.MIN_REDEMPTIONS_FOR_SPEED_CHECK) {
     const fast = redeemed.filter(
@@ -278,7 +286,9 @@ export function evaluateRulesForWallet(
 
   // 3) Concentrated redeemer (wallet as scout)
   const allRedeemedScoutCodes = scoutCodesList.filter((c) => c.usedBy !== null);
-  if (allRedeemedScoutCodes.length >= t.MIN_REDEMPTIONS_FOR_CONCENTRATION_CHECK) {
+  if (
+    allRedeemedScoutCodes.length >= t.MIN_REDEMPTIONS_FOR_CONCENTRATION_CHECK
+  ) {
     const countByRedeemer: Record<string, number> = {};
     for (const c of allRedeemedScoutCodes) {
       const r = c.usedBy!;
@@ -321,7 +331,9 @@ export function evaluateRulesForWallet(
         'referral',
         'cross_scout_redeemer_ring',
         [wallet, ...distinctScouts],
-        distinctScouts.size >= t.RING_MIN_DISTINCT_SCOUTS * 2 ? 'high' : 'medium',
+        distinctScouts.size >= t.RING_MIN_DISTINCT_SCOUTS * 2
+          ? 'high'
+          : 'medium',
         `Wallet redeemed referral codes from ${distinctScouts.size} distinct scouts.`,
         {
           distinctScouts: distinctScouts.size,

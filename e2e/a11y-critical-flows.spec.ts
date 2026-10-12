@@ -64,7 +64,9 @@ test.describe('keyboard accessibility for critical flows', () => {
     await page.getByLabel(/position/i).selectOption({ label: 'Striker' });
     await page.getByLabel(/level/i).selectOption({ label: 'Semi-Pro' });
 
-    const payButton = page.getByRole('button', { name: /pay to contact/i }).first();
+    const payButton = page
+      .getByRole('button', { name: /pay to contact/i })
+      .first();
     await payButton.focus();
     await page.keyboard.press('Enter');
 

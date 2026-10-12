@@ -132,9 +132,9 @@ describe('runIncrementalFraudFlagEvaluation', () => {
     });
 
     expect(result.eventsProcessed).toBe(8);
-    expect(result.flags.some((f) => f.heuristic === 'rapid_contact_burst')).toBe(
-      true,
-    );
+    expect(
+      result.flags.some((f) => f.heuristic === 'rapid_contact_burst'),
+    ).toBe(true);
 
     const store = FraudFlagsStore.getInstance();
     const checkpoint = store.getCheckpoint();
@@ -173,4 +173,3 @@ describe('runIncrementalFraudFlagEvaluation', () => {
     expect(result.hitTimeBudget).toBe(true);
   });
 });
-
