@@ -16,14 +16,11 @@
 
 import { test, expect } from '@playwright/test';
 import { installMockFreighter } from './fixtures/wallet-mock';
-import { Keypair } from '@stellar/stellar-sdk';
-
-// Admin keypair for testing (must match the environment variable in test setup)
-const ADMIN_SECRET =
-  process.env.E2E_ADMIN_SECRET ??
-  'SABQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGAYDAMBQGC45';
-const ADMIN_KEYPAIR = Keypair.fromSecret(ADMIN_SECRET);
-const ADMIN_ADDRESS = ADMIN_KEYPAIR.publicKey();
+import { mockSorobanRpc, type SimulateOptions } from './fixtures/mock-contract';
+import {
+  E2E_ADMIN_ADDRESS as ADMIN_ADDRESS,
+  E2E_ADMIN_SECRET as ADMIN_SECRET,
+} from './fixtures/admin';
 
 const ACCUMULATED_FEES_XLM = 5;
 

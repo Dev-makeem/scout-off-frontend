@@ -11,16 +11,17 @@
 
 import { test, expect } from '@playwright/test';
 import { Keypair } from '@stellar/stellar-sdk';
-
-// Generate a deterministic admin keypair for testing
-const ADMIN_SECRET = 'SAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC5MY';
-const ADMIN_KEYPAIR = Keypair.fromSecret(ADMIN_SECRET);
-const ADMIN_ADDRESS = ADMIN_KEYPAIR.publicKey();
+import { installMockFreighter } from './fixtures/wallet-mock';
+import { mockSorobanRpc } from './fixtures/mock-contract';
+import {
+  E2E_ADMIN_ADDRESS as ADMIN_ADDRESS,
+  E2E_ADMIN_SECRET as ADMIN_SECRET,
+} from './fixtures/admin';
 
 // Non-admin test wallet (different from admin)
-const NON_ADMIN_SECRET = 'SABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAFNE7';
-const NON_ADMIN_KEYPAIR = Keypair.fromSecret(NON_ADMIN_SECRET);
-const NON_ADMIN_ADDRESS = NON_ADMIN_KEYPAIR.publicKey();
+const NON_ADMIN_SECRET =
+  'SABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAFNE7';
+const NON_ADMIN_ADDRESS = Keypair.fromSecret(NON_ADMIN_SECRET).publicKey();
 
 function truncateAddress(address: string): string {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;

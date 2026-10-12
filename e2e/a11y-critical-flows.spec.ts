@@ -71,9 +71,8 @@ test.describe('keyboard accessibility for critical flows', () => {
     // Pay-to-contact lives on the player profile.
     await page.goto(`/en/player/${DEFAULT_PLAYER.id}`);
 
-    const payButton = page
-      .getByRole('button', { name: /pay to contact/i })
-      .first();
+    const payButton = page.getByRole('button', { name: /^pay to contact/i });
+    await expect(payButton).toBeVisible({ timeout: 60_000 });
     await payButton.focus();
     await page.keyboard.press('Enter');
 
