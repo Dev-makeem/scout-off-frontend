@@ -210,3 +210,18 @@ E2E_CONTRACT_ID=<deployed contract id> npm run test:e2e
 
 If you need the suite to drive a different account (e.g. one you've already
 funded), override the secret: `E2E_WALLET_SECRET=S... npm run test:e2e`.
+
+## Frame-budget check (production builds only)
+
+`scout-virtualization-performance.spec.ts` measures main-thread long tasks
+while scrolling 5,000 players. React's development build alone produces
+
+> 100 ms tasks, so against the default `next dev` server the spec only
+> reports the number (as a `frame-budget` test annotation) and enforces the
+> DOM-bounding assertions. To enforce the 20 ms budget, run it against a
+> production build:
+
+```bash
+npm run build && npx next start -p 3100 &   # same env as the dev server
+E2E_PROD_BUILD=1 npx playwright test e2e/scout-virtualization-performance.spec.ts
+```
