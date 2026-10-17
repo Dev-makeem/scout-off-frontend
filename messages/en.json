@@ -140,6 +140,13 @@
     "removeAccountConfirmTitle": "Remove this account?",
     "removeAccountConfirmMessage": "This address will be removed from your remembered accounts on this device."
   },
+  "session_mismatch_warning": {
+    "title": "Session mismatch detected",
+    "body": "The wallet address shown ({address}…) differs from the identity your session is authenticated to. This may happen if you switched accounts in your wallet extension without logging out first.",
+    "reauthenticate": "Re-authenticate",
+    "reauthenticating": "Re-authenticating…",
+    "dismiss_aria": "Dismiss warning"
+  },
   "errors": {
     "not_found": "Not found",
     "unauthorized": "Unauthorized",

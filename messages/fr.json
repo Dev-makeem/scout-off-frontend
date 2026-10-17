@@ -157,6 +157,13 @@
     "removeAccountConfirmTitle": "Supprimer ce compte ?",
     "removeAccountConfirmMessage": "Cette adresse sera supprimée de vos comptes mémorisés sur cet appareil."
   },
+  "session_mismatch_warning": {
+    "title": "Incohérence de session détectée",
+    "body": "L'adresse de portefeuille affichée ({address}…) diffère de l'identité à laquelle votre session est authentifiée. Cela peut arriver si vous avez changé de compte dans l'extension de votre portefeuille sans vous déconnecter au préalable.",
+    "reauthenticate": "Se réauthentifier",
+    "reauthenticating": "Réauthentification…",
+    "dismiss_aria": "Fermer l'avertissement"
+  },
   "errors": {
     "not_found": "Non trouvé",
     "unauthorized": "Non autorisé",
