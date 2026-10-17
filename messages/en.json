@@ -485,6 +485,13 @@
   "offline": {
     "bannerMessage": "You're offline. Some features may be unavailable until your connection returns."
   },
+  "service_worker_update_banner": {
+    "title": "New version available.",
+    "message": "Reload to get the latest updates.",
+    "reload": "Reload",
+    "dismiss": "Dismiss",
+    "dismiss_aria": "Dismiss update banner"
+  },
   "apiErrors": {
     "RATE_LIMITED": "Too many requests. Please slow down and try again shortly.",
     "INVALID_REQUEST": "The request was invalid. Please check your input and try again.",
